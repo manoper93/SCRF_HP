@@ -2,78 +2,43 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Simulação 3D - Motor e Porta</title>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <title>Simulação 3D - Escolha o Módulo</title>
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #f9f9f9;
+      background: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
     h1 {
-      text-align: center;
-      padding: 1rem;
+      margin-bottom: 2rem;
     }
-    .viewer-grid {
+    .buttons {
       display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
+      gap: 2rem;
     }
-    .viewer-box {
-      flex: 1 1 45%;
-      max-width: 600px;
-      min-width: 300px;
-      border: 1px solid #ccc;
-      background: white;
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      border: none;
       border-radius: 10px;
-      overflow: hidden;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      transition: background 0.3s;
     }
-    model-viewer {
-      width: 100%;
-      height: 500px;
-      background-color: #fff;
-    }
-    .label {
-      text-align: center;
-      font-weight: bold;
-      padding: 0.5rem;
-      background: #eee;
+    .btn:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
 
-  <h1>Simulação 3D: Módulo Motor e Módulo Porta</h1>
-
-  <div class="viewer-grid">
-    <div class="viewer-box">
-      <div class="label">Módulo Motor</div>
-      <model-viewer src="modulo_motor.glb"
-        alt="Módulo Motor"
-        auto-rotate
-        camera-controls
-        shadow-intensity="1"
-        exposure="1"
-        environment-image="neutral"
-        ar>
-      </model-viewer>
-    </div>
-
-    <div class="viewer-box">
-      <div class="label">Módulo Porta</div>
-      <model-viewer src="modulo_porta.glb"
-        alt="Módulo Porta"
-        auto-rotate
-        camera-controls
-        shadow-intensity="1"
-        exposure="1"
-        environment-image="neutral"
-        ar>
-      </model-viewer>
-    </div>
-  </div>
-
-</body>
-</html>
+  <h1>Escolha o módulo para visualizar em 3D</h1>
+  <div class="buttons">
+    <a href="motor.html"><button class="btn">🔧 Módulo Motor</button></a>
+    <a href="porta.htm
