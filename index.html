@@ -7,7 +7,8 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #f5f5f5;
+      background: #121212;
+      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -27,12 +28,13 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      background: #007bff;
+      background: #1e88e5;
       color: white;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.2s;
     }
     .btn:hover {
-      background: #0056b3;
+      background: #1565c0;
+      transform: scale(1.05);
     }
   </style>
 </head>
@@ -41,4 +43,8 @@
   <h1>Escolha o módulo para visualizar em 3D</h1>
   <div class="buttons">
     <a href="motor.html"><button class="btn">🔧 Módulo Motor</button></a>
-    <a href="porta.htm
+    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
+  </div>
+
+</body>
+</html>
