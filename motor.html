@@ -8,22 +8,66 @@
     body {
       margin: 0;
       background-color: #121212;
+      font-family: sans-serif;
     }
+
     model-viewer {
       width: 100vw;
       height: 100vh;
       background-color: #1e1e1e;
     }
+
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #121212;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .spinner {
+      border: 6px solid #333;
+      border-top: 6px solid #1e88e5;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <model-viewer src="PSRF_HP_Módulo_Motor.glb"
+
+  <!-- Tela de carregamento -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Visualizador 3D -->
+  <model-viewer id="viewer"
+    src="PSRF_HP_Módulo_Motor.glb"
     alt="Módulo Motor"
     camera-controls
-    shadow-intensity="0"
+    shadow-intensity="1"
     exposure="1"
     environment-image="neutral"
     ar>
   </model-viewer>
+
+  <script>
+    const viewer = document.getElementById('viewer');
+    viewer.addEventListener('load', () => {
+      document.getElementById('loading').style.display = 'none';
+    });
+  </script>
+
 </body>
 </html>
