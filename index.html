@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0;
-      background: #3cb4e6; /* Cor de fundo do logo ST */
+      background: #3cb4e6;
       color: #fff;
       font-family: sans-serif;
       display: flex;
@@ -22,6 +22,7 @@
       justify-content: flex-end;
       align-items: center;
       padding: 10px 20px;
+      gap: 10px;
     }
 
     .logo {
@@ -71,28 +72,34 @@
       .btn {
         width: 80%;
       }
+      header {
+        flex-direction: column;
+        gap: 8px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Logo -->
+  <!-- Cabeçalho com 3 logos -->
   <header>
     <img src="logo_st.png" alt="Logo ST" class="logo" />
+    <img src="logo_tedayc.png" alt="Logo 2" class="logo" />
+    <img src="logo_isep.png" alt="Logo 3" class="logo" />
   </header>
 
   <!-- Título -->
   <h1>PSRF - Porta Serviço Rádio Frequência</h1>
   <h2>Escolha o módulo para visualizar em 3D</h2>
 
-  <!-- Botões para simulação e esquema -->
+  <!-- Botões para simulação -->
   <div class="buttons">
     <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
     <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a> 
   </div>
-  
+
   <h2>Visualizar o Esquemático</h2>
-  
+
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
