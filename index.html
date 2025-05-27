@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
+      padding: 0;
       background: #3cb4e6;
       color: #fff;
       font-family: sans-serif;
@@ -22,26 +27,29 @@
       justify-content: flex-end;
       align-items: center;
       padding: 10px 20px;
-      gap: 10px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .logo {
       height: 40px;
       width: 40px;
-      border-radius: 2%;
+      border-radius: 50%;
       object-fit: cover;
+      background: #fff;
     }
 
     h1 {
       text-align: center;
-      margin: 1rem 0 0.5rem;
-      font-size: 1.8rem;
+      margin: 1rem 1rem 0.5rem;
+      font-size: 2rem;
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 2rem;
+      margin: 0 1rem 2rem;
       font-weight: normal;
+      font-size: 1.2rem;
     }
 
     .buttons {
@@ -50,6 +58,8 @@
       flex-wrap: wrap;
       justify-content: center;
       margin-bottom: 2rem;
+      padding: 0 1rem;
+      width: 100%;
     }
 
     .btn {
@@ -61,6 +71,9 @@
       background: #003366;
       color: white;
       transition: background 0.3s, transform 0.2s;
+      flex: 1 1 220px;
+      max-width: 300px;
+      text-align: center;
     }
 
     .btn:hover {
@@ -69,15 +82,23 @@
     }
 
     @media (max-width: 600px) {
-      h1 {
-        font-size: 1.4rem;
-      }
-      .btn {
-        width: 80%;
-      }
       header {
-        flex-direction: column;
-        gap: 8px;
+        justify-content: center;
+        padding: 15px 10px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .logo {
+        height: 36px;
+        width: 36px;
       }
     }
   </style>
@@ -87,8 +108,8 @@
   <!-- Cabeçalho com 3 logos -->
   <header>
     <img src="logo_st.png" alt="Logo ST" class="logo" />
-    <img src="logo_tedayc.png" alt="Logo 2" class="logo" />
-    <img src="logo_isep.png" alt="Logo 3" class="logo" />
+    <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
+    <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
   </header>
 
   <!-- Título -->
