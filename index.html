@@ -218,18 +218,17 @@
   }
 
   function getDateTimeSeparated() {
-  const now = new Date();
-  return {
-    date: now.toLocaleDateString(),
-    time: now.toLocaleTimeString([], {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    })
-  };
-}
-
+    const now = new Date();
+    return {
+      date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString([], {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
+    };
+  }
 
   function showLastVisit() {
     const value = localStorage.getItem('lastVisitTime');
@@ -243,12 +242,22 @@
     }
   }
 
-  function showLastVote() {
-    const value = localStorage.getItem('lastVoteTime');
-    if (value) {
-      const [date, time] = value.split(', ');
-      lastVoteDate.textContent = date || '--';
-      lastVoteTime.textContent = time || '--';
+  function showGlobalLastVote(data) {
+    const voteLines = data
+      .filter(row => ['1', '2', '3', '4', '5'].includes(row.tipo) && parseInt(row.valor) > 0 && row.date)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (voteLines.length > 0) {
+      const latest = new Date(voteLines[0].date);
+      const date = latest.toLocaleDateString();
+      const time = latest.toLocaleTimeString([], {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      lastVoteDate.textContent = date;
+      lastVoteTime.textContent = time;
     } else {
       lastVoteDate.textContent = '--';
       lastVoteTime.textContent = '--';
@@ -276,7 +285,7 @@
     }
     ratingDisplay.innerHTML = output;
 
-    showLastVote();
+    showGlobalLastVote(data);
   }
 
   async function incrementVisit() {
@@ -286,7 +295,11 @@
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'visita', valor: 1, date: getNowISO() })
+        body: JSON.stringify({
+          tipo: 'visita',
+          valor: 1,
+          date: getNowISO()
+        })
       });
 
       const { date, time } = getDateTimeSeparated();
@@ -309,22 +322,30 @@
 
     if (!confirm(confirmMsg)) return;
 
+    // Voto novo
     await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: String(estrela), valor: 1, date: getNowISO() })
+      body: JSON.stringify({
+        tipo: String(estrela),
+        valor: 1,
+        date: getNowISO()
+      })
     });
 
+    // Decrementa voto anterior (se existir)
     if (userRating && userRating !== estrela) {
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: String(userRating), valor: -1, date: getNowISO() })
+        body: JSON.stringify({
+          tipo: String(userRating),
+          valor: -1,
+          date: getNowISO()
+        })
       });
     }
 
-    const { date, time } = getDateTimeSeparated();
-    localStorage.setItem('lastVoteTime', `${date}, ${time}`);
     localStorage.setItem('userRating', estrela);
     userRating = estrela;
     updateStars(estrela);
