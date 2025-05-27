@@ -206,18 +206,18 @@
     const res = await fetch(API_URL);
     const data = await res.json();
 
-    // Somar todas as visitas
+    // Total de visitas
     const totalVisitas = data
       .filter(row => row.tipo === 'visita')
       .reduce((acc, row) => acc + parseInt(row.valor || 0), 0);
 
     visitDisplay.textContent = totalVisitas;
 
-    // Mostrar votos por estrela
+    // Votos por estrela
     const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     data.forEach(row => {
       const num = parseInt(row.tipo);
-      if (!isNaN(num)) votos[num] = (votos[num] || 0) + parseInt(row.valor);
+      if (!isNaN(num)) votos[num] += parseInt(row.valor || 0);
     });
 
     let output = '';
@@ -238,27 +238,39 @@
     }
   }
 
-  async function sendVote(estrela) {
-    if (userRating && userRating == estrela) {
+  async function sendVote(novoVoto) {
+    if (userRating && userRating == novoVoto) {
       alert("Você já votou com essa avaliação.");
       return;
     }
 
-    const confirmMsg = userRating
-      ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrela}?`
-      : `Deseja votar com ${estrela} estrela(s)?`;
+    const confirmar = confirm(
+      userRating
+        ? `Você já votou com ${userRating} estrela(s). Deseja trocar para ${novoVoto}?`
+        : `Deseja votar com ${novoVoto} estrela(s)?`
+    );
 
-    if (!confirm(confirmMsg)) return;
+    if (!confirmar) return;
 
+    // Envia incremento para o novo voto
     await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: String(estrela), valor: 1 })
+      body: JSON.stringify({ tipo: String(novoVoto), valor: 1 })
     });
 
-    localStorage.setItem('userRating', estrela);
-    userRating = estrela;
-    updateStars(estrela);
+    // Se for alteração, envia decremento do voto anterior
+    if (userRating && userRating !== novoVoto) {
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: String(userRating), valor: -1 })
+      });
+    }
+
+    localStorage.setItem('userRating', novoVoto);
+    userRating = novoVoto;
+    updateStars(novoVoto);
     await loadData();
   }
 
@@ -280,6 +292,6 @@
 
   incrementVisit().then(loadData);
 </script>
-
+  
 </body>
 </html>
