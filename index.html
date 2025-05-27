@@ -100,12 +100,32 @@
       }
     }
 
-    /* Contador no canto inferior direito */
     .visitor-counter {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      z-index: 999;
+    }
+
+    .rating-widget {
       position: fixed;
       bottom: 10px;
       right: 10px;
       z-index: 999;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .star {
+      font-size: 24px;
+      cursor: pointer;
+      color: #ccc;
+      transition: color 0.2s;
+    }
+
+    .star.selected {
+      color: gold;
     }
   </style>
 </head>
@@ -134,12 +154,45 @@
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
 
-  <!-- Contador de visitas -->
+  <!-- Contador de visitas no canto inferior esquerdo -->
   <div class="visitor-counter">
     <a href="https://github.com/manoper93/PSRF" target="_blank">
       <img src="https://visitor-badge.laobi.icu/badge?page_id=manoper93.PSRF" alt="Contador de visitas no GitHub" />
     </a>
   </div>
+
+  <!-- Avaliador de 5 estrelas no canto inferior direito -->
+  <div class="rating-widget">
+    <span class="star" data-value="1">&#9733;</span>
+    <span class="star" data-value="2">&#9733;</span>
+    <span class="star" data-value="3">&#9733;</span>
+    <span class="star" data-value="4">&#9733;</span>
+    <span class="star" data-value="5">&#9733;</span>
+  </div>
+
+  <script>
+    const stars = document.querySelectorAll('.star');
+    const savedRating = localStorage.getItem('userRating');
+
+    function updateStars(rating) {
+      stars.forEach(star => {
+        const val = parseInt(star.getAttribute('data-value'));
+        star.classList.toggle('selected', val <= rating);
+      });
+    }
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        const rating = parseInt(star.getAttribute('data-value'));
+        localStorage.setItem('userRating', rating);
+        updateStars(rating);
+      });
+    });
+
+    if (savedRating) {
+      updateStars(parseInt(savedRating));
+    }
+  </script>
 
 </body>
 </html>
