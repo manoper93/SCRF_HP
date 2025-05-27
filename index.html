@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Avaliação e Visitas</title>
   <style>
+    :root {
+      font-size: 16px;
+    }
+
     body {
       margin: 0;
+      padding: 0;
       background: #3cb4e6;
       color: #fff;
       font-family: sans-serif;
@@ -14,14 +19,15 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     header {
       width: 100%;
       display: flex;
       justify-content: center;
-      padding: 10px;
-      gap: 10px;
+      padding: 1rem;
+      gap: 1rem;
       flex-wrap: wrap;
     }
 
@@ -30,9 +36,16 @@
       width: 60px;
     }
 
-    h1, h2 {
+    h1 {
       text-align: center;
       margin: 1rem;
+      font-size: 2rem;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
     }
 
     .buttons {
@@ -68,9 +81,9 @@
       position: fixed;
       z-index: 999;
       background: rgba(0,0,0,0.3);
-      padding: 10px;
+      padding: 0.8rem;
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 1rem;
     }
 
     .visitor-counter {
@@ -85,7 +98,7 @@
     }
 
     .star {
-      font-size: 28px;
+      font-size: 2rem;
       cursor: pointer;
       color: #ccc;
     }
@@ -95,26 +108,38 @@
     }
 
     .rating-counts {
-      margin-top: 5px;
+      margin-top: 0.5rem;
+      text-align: left;
+      font-size: 0.875rem;
     }
 
-    .rating-counts div {
-      font-size: 13px;
-    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
 
-    @media (max-width: 500px) {
+      h2 {
+        font-size: 1rem;
+      }
+
       .star {
-        font-size: 22px;
+        font-size: 1.5rem;
       }
 
       .visitor-counter,
       .rating-widget {
-        font-size: 12px;
-        padding: 8px;
+        font-size: 0.875rem;
+        padding: 0.6rem;
       }
 
-      .rating-counts div {
-        font-size: 11px;
+      .rating-widget {
+        bottom: 70px; /* move um pouco para cima em telas pequenas */
+        right: 10px;
+      }
+
+      .visitor-counter {
+        bottom: 10px;
+        left: 10px;
       }
     }
   </style>
@@ -160,7 +185,6 @@
   <script>
     const API_BASE = "https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b";
 
-    // VISITAS
     async function atualizarVisitas() {
       try {
         const res = await fetch(`${API_BASE}/tabs/visitas`);
@@ -168,19 +192,17 @@
         let total = parseInt(dados[0].total || 0);
         total++;
         document.getElementById("visit-count").textContent = total;
-
         await fetch(`${API_BASE}/tabs/visitas/total/${dados[0].total}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ total: total })
+          body: JSON.stringify({ total })
         });
       } catch (error) {
         document.getElementById("visit-count").textContent = "Erro";
-        console.error("Erro ao contar visitas:", error);
+        console.error(error);
       }
     }
 
-    // VOTOS
     const stars = document.querySelectorAll(".star");
     const countsDisplay = document.getElementById("rating-counts");
 
@@ -195,7 +217,6 @@
         });
       } catch (error) {
         countsDisplay.innerHTML = "<div>Erro ao carregar votos</div>";
-        console.error("Erro ao carregar votos:", error);
       }
     }
 
@@ -224,7 +245,6 @@
         carregarVotos();
       } catch (error) {
         alert("Erro ao votar.");
-        console.error("Erro ao votar:", error);
       }
     }
 
@@ -242,9 +262,9 @@
       });
     });
 
-    // Inicialização
     atualizarVisitas();
     carregarVotos();
+
     const votoSalvo = localStorage.getItem("votou");
     if (votoSalvo) marcarEstrelas(parseInt(votoSalvo));
   </script>
