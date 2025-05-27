@@ -1,4 +1,4 @@
 # PSRF
 Porta Serviço Rádio Frequência
 
-![Captura de ecrã 2025-05-27 015534](https://github.com/user-attachments/assets/bdf4ac17-d939-4bf8-9359-8b328c767a3b)
+![frame](https://github.com/user-attachments/assets/548af6c9-a1d2-4fe2-bcfe-9acb07364637)
