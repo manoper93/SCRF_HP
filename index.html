@@ -16,21 +16,64 @@
       min-height: 100vh;
     }
 
-    h1, h2 {
-      text-align: center;
-      margin-top: 1rem;
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 10px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .counter, .rating-widget {
+    .logo {
+      height: 60px;
+      width: 60px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      margin: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .btn {
+      flex: 1 1 220px;
+      max-width: 300px;
+      padding: 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: #003366;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .btn:hover {
+      background: #001f4d;
+      transform: scale(1.05);
+    }
+
+    .visitor-counter,
+    .rating-widget {
       position: fixed;
       z-index: 999;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0,0,0,0.3);
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 14px;
     }
 
-    .counter {
+    .visitor-counter {
       bottom: 10px;
       left: 10px;
     }
@@ -52,27 +95,57 @@
     }
 
     .rating-counts {
-      margin-top: 8px;
-      text-align: left;
+      margin-top: 5px;
+    }
+
+    .rating-counts div {
+      font-size: 13px;
     }
 
     @media (max-width: 500px) {
-      .star { font-size: 22px; }
-      .counter, .rating-widget { font-size: 12px; padding: 8px; }
+      .star {
+        font-size: 22px;
+      }
+
+      .visitor-counter,
+      .rating-widget {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      .rating-counts div {
+        font-size: 11px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>PSRF - Porta Serviço Rádio Frequência</h1>
-  <h2>Avalie o site e acompanhe as visitas</h2>
+  <header>
+    <img src="logo_st.png" alt="Logo ST" class="logo" />
+    <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
+    <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
+  </header>
 
-  <!-- Contador de Visitas -->
-  <div class="counter">
+  <h1>PSRF - Porta Serviço Rádio Frequência</h1>
+  <h2>Escolha o módulo para visualizar em 3D</h2>
+
+  <div class="buttons">
+    <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
+    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
+  </div>
+
+  <h2>Visualizar o Esquemático</h2>
+  <div class="buttons">
+    <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
+  </div>
+
+  <!-- Visitas -->
+  <div class="visitor-counter">
     Visitas: <span id="visit-count">...</span>
   </div>
 
-  <!-- Avaliação com estrelas -->
+  <!-- Avaliação -->
   <div class="rating-widget">
     <div>
       <span class="star" data-value="1">&#9733;</span>
@@ -91,20 +164,19 @@
     async function atualizarVisitas() {
       try {
         const res = await fetch(`${API_BASE}/tabs/visitas`);
-        const data = await res.json();
-        let total = parseInt(data[0].total || 0);
+        const dados = await res.json();
+        let total = parseInt(dados[0].total || 0);
         total++;
-
         document.getElementById("visit-count").textContent = total;
 
-        await fetch(`${API_BASE}/tabs/visitas/total/${data[0].total}`, {
+        await fetch(`${API_BASE}/tabs/visitas/total/${dados[0].total}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ total })
+          body: JSON.stringify({ total: total })
         });
-      } catch (err) {
-        console.error("Erro ao atualizar visitas:", err);
+      } catch (error) {
         document.getElementById("visit-count").textContent = "Erro";
+        console.error("Erro ao contar visitas:", error);
       }
     }
 
@@ -116,14 +188,14 @@
       try {
         const res = await fetch(`${API_BASE}/tabs/votos`);
         const votos = await res.json();
-        votos.sort((a, b) => parseInt(a.estrela) - parseInt(b.estrela));
-
         countsDisplay.innerHTML = "";
+        votos.sort((a, b) => parseInt(a.estrela) - parseInt(b.estrela));
         votos.forEach(v => {
           countsDisplay.innerHTML += `<div>${v.estrela} estrela(s): ${v.votos}</div>`;
         });
-      } catch (err) {
-        countsDisplay.innerHTML = "<div>Erro ao carregar votos.</div>";
+      } catch (error) {
+        countsDisplay.innerHTML = "<div>Erro ao carregar votos</div>";
+        console.error("Erro ao carregar votos:", error);
       }
     }
 
@@ -137,8 +209,7 @@
         const res = await fetch(`${API_BASE}/tabs/votos`);
         const votos = await res.json();
         const registro = votos.find(v => v.estrela === estrela.toString());
-
-        if (!registro) return alert("Erro ao localizar estrela.");
+        if (!registro) return;
 
         const novoValor = parseInt(registro.votos) + 1;
 
@@ -151,8 +222,9 @@
         localStorage.setItem("votou", estrela);
         marcarEstrelas(estrela);
         carregarVotos();
-      } catch (err) {
+      } catch (error) {
         alert("Erro ao votar.");
+        console.error("Erro ao votar:", error);
       }
     }
 
