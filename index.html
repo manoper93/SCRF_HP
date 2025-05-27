@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PSRF - Avaliação Pública</title>
+  <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
@@ -16,27 +19,23 @@
       align-items: center;
       min-height: 100vh;
     }
-
     header {
+      width: 100%;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
+      padding: 10px 20px;
       gap: 12px;
-      padding: 10px;
-      width: 100%;
+      flex-wrap: wrap;
     }
-
     .logo {
       height: 60px;
       width: 60px;
     }
-
     h1, h2 {
       text-align: center;
       margin: 1rem;
     }
-
     .buttons {
       display: flex;
       flex-wrap: wrap;
@@ -46,7 +45,6 @@
       width: 100%;
       max-width: 800px;
     }
-
     .btn {
       flex: 1 1 220px;
       max-width: 300px;
@@ -57,14 +55,13 @@
       background: #003366;
       color: white;
       cursor: pointer;
-      transition: 0.3s;
+      transition: background 0.3s, transform 0.2s;
+      text-align: center;
     }
-
     .btn:hover {
       background: #001f4d;
       transform: scale(1.05);
     }
-
     .visitor-counter,
     .rating-widget {
       position: fixed;
@@ -74,41 +71,33 @@
       border-radius: 10px;
       font-size: 14px;
     }
-
     .visitor-counter {
       bottom: 10px;
       left: 10px;
     }
-
     .rating-widget {
       bottom: 10px;
       right: 10px;
       text-align: center;
     }
-
     .star {
       font-size: 28px;
       cursor: pointer;
       color: #ccc;
     }
-
     .star.selected {
       color: gold;
     }
-
     .rating-counts {
       margin-top: 5px;
     }
-
     .rating-counts div {
       font-size: 13px;
     }
-
     @media (max-width: 500px) {
       .star {
         font-size: 22px;
       }
-
       .visitor-counter,
       .rating-widget {
         font-size: 12px;
@@ -160,7 +149,6 @@
     const visitDisplay = document.getElementById('visit-count');
     const countsDisplay = document.getElementById('rating-counts');
     const stars = document.querySelectorAll('.star');
-
     let userRating = localStorage.getItem('userRating');
     let voteCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
@@ -235,7 +223,6 @@
       await loadVotes();
     }
 
-    // Eventos
     stars.forEach(star => {
       star.addEventListener('click', () => {
         const val = parseInt(star.dataset.value);
@@ -243,7 +230,6 @@
       });
     });
 
-    // Inicializar
     if (userRating) updateStars(parseInt(userRating));
     loadVotes();
     incrementVisit();
