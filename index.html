@@ -5,8 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
+      padding: 0;
       background: #3cb4e6;
       color: #fff;
       font-family: sans-serif;
@@ -19,7 +24,8 @@
     header {
       width: 100%;
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
+      align-items: center;
       padding: 10px 20px;
       gap: 12px;
       flex-wrap: wrap;
@@ -32,25 +38,39 @@
 
     h1, h2 {
       text-align: center;
+      margin: 1rem 1rem 0.5rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
     }
 
     .buttons {
       display: flex;
-      gap: 1rem;
       flex-wrap: wrap;
       justify-content: center;
-      margin: 2rem 0;
+      gap: 1rem;
+      padding: 1rem;
+      width: 100%;
+      max-width: 800px;
     }
 
     .btn {
-      padding: 1rem 2rem;
+      flex: 1 1 220px;
+      max-width: 300px;
+      padding: 1rem;
       font-size: 1rem;
       border: none;
       border-radius: 10px;
-      cursor: pointer;
       background: #003366;
       color: white;
-      transition: 0.3s;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      text-align: center;
     }
 
     .btn:hover {
@@ -58,26 +78,29 @@
       transform: scale(1.05);
     }
 
-    .visitor-counter {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      z-index: 999;
-    }
-
+    .visitor-counter,
     .rating-widget {
       position: fixed;
-      bottom: 10px;
-      right: 10px;
       z-index: 999;
-      background: rgba(0,0,0,0.3);
       padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
       border-radius: 10px;
       font-size: 14px;
     }
 
+    .visitor-counter {
+      bottom: 10px;
+      left: 10px;
+    }
+
+    .rating-widget {
+      bottom: 10px;
+      right: 10px;
+      text-align: center;
+    }
+
     .star {
-      font-size: 24px;
+      font-size: 28px;
       cursor: pointer;
       color: #ccc;
     }
@@ -92,6 +115,30 @@
 
     .rating-counts div {
       font-size: 13px;
+    }
+
+    @media (max-width: 500px) {
+      .star {
+        font-size: 22px;
+      }
+
+      .visitor-counter,
+      .rating-widget {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      .rating-counts div {
+        font-size: 11px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
@@ -119,7 +166,7 @@
 
   <!-- Contador de visitas simulado -->
   <div class="visitor-counter">
-    <span>Visitas: <span id="visit-count">0</span></span>
+    Visitas: <span id="visit-count">0</span>
   </div>
 
   <!-- Avaliação com contadores -->
@@ -135,7 +182,7 @@
   </div>
 
   <script>
-    // Simula contador de visitas local
+    // Simula contador de visitas
     let visitCount = localStorage.getItem('visitCount') || 0;
     visitCount++;
     localStorage.setItem('visitCount', visitCount);
