@@ -13,6 +13,34 @@
       font-family: sans-serif;
       overflow: hidden;
     }
+    
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .logo {
+      height: 40px;
+    }
+
+    .back-button {
+      background: #003366;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .back-button:hover {
+      background: #001f4d;
+    }
+
 
     model-viewer {
       width: 100vw;
@@ -76,6 +104,11 @@
   <!-- Título da página -->
   <h1 class="titulo">Módulo Motor 3D</h1>
 
+  <header>
+    <button class="back-button" onclick="window.location.href='index.html'">⬅ Voltar</button>
+    <img src="logo_st.png" alt="Logo ST" class="logo" />
+  </header>
+  
   <!-- Visualizador 3D -->
   <model-viewer src="PSRF_HP_Módulo_Motor.glb"
     alt="Módulo Motor"
