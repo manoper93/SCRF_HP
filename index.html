@@ -3,12 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PSRF - Porta Serviço Rádio Frequência</title>
+  <title>PSRF - Avaliação Pública</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       padding: 0;
@@ -22,13 +18,13 @@
     }
 
     header {
-      width: 100%;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      padding: 10px 20px;
       gap: 12px;
-      flex-wrap: wrap;
+      padding: 10px;
+      width: 100%;
     }
 
     .logo {
@@ -38,15 +34,7 @@
 
     h1, h2 {
       text-align: center;
-      margin: 1rem 1rem 0.5rem;
-    }
-
-    h1 {
-      font-size: 2rem;
-    }
-
-    h2 {
-      font-size: 1.2rem;
+      margin: 1rem;
     }
 
     .buttons {
@@ -69,8 +57,7 @@
       background: #003366;
       color: white;
       cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-      text-align: center;
+      transition: 0.3s;
     }
 
     .btn:hover {
@@ -83,7 +70,7 @@
       position: fixed;
       z-index: 999;
       padding: 10px;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0,0,0,0.3);
       border-radius: 10px;
       font-size: 14px;
     }
@@ -127,18 +114,6 @@
         font-size: 12px;
         padding: 8px;
       }
-
-      .rating-counts div {
-        font-size: 11px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      h2 {
-        font-size: 1rem;
-      }
     }
   </style>
 </head>
@@ -159,17 +134,16 @@
   </div>
 
   <h2>Visualizar o Esquemático</h2>
-
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
 
-  <!-- Contador de visitas global -->
+  <!-- Visitas -->
   <div class="visitor-counter">
-    Visitas únicas neste navegador: <span id="visit-count">0</span>
+    Visitas públicas: <span id="visit-count">...</span>
   </div>
 
-  <!-- Avaliação com contadores -->
+  <!-- Avaliação -->
   <div class="rating-widget">
     <div>
       <span class="star" data-value="1">&#9733;</span>
@@ -178,67 +152,101 @@
       <span class="star" data-value="4">&#9733;</span>
       <span class="star" data-value="5">&#9733;</span>
     </div>
-    <div class="rating-counts" id="rating-counts"></div>
+    <div class="rating-counts" id="rating-counts">Carregando...</div>
   </div>
 
   <script>
-    // Visitas únicas globais por navegador (independente da página)
-    const VISIT_KEY = 'psrf_global_visit';
-    const TOTAL_KEY = 'psrf_global_total';
+    const API_BASE = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
     const visitDisplay = document.getElementById('visit-count');
-    if (!localStorage.getItem(VISIT_KEY)) {
-      let total = parseInt(localStorage.getItem(TOTAL_KEY) || '0') + 1;
-      localStorage.setItem(TOTAL_KEY, total);
-      localStorage.setItem(VISIT_KEY, 'true');
-    }
-    visitDisplay.textContent = localStorage.getItem(TOTAL_KEY) || 1;
-
-    // Avaliação com alteração e confirmação
-    const stars = document.querySelectorAll('.star');
     const countsDisplay = document.getElementById('rating-counts');
-    let ratingCounts = JSON.parse(localStorage.getItem('ratingCounts')) || {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
-    let userRating = parseInt(localStorage.getItem('userRating') || '0');
+    const stars = document.querySelectorAll('.star');
 
-    function updateCounts() {
-      countsDisplay.innerHTML = '';
-      for (let i = 1; i <= 5; i++) {
-        countsDisplay.innerHTML += `<div>${i} estrela(s): ${ratingCounts[i]}</div>`;
-      }
-    }
+    let userRating = localStorage.getItem('userRating');
+    let voteCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
     function updateStars(rating) {
       stars.forEach(star => {
-        const val = parseInt(star.getAttribute('data-value'));
+        const val = parseInt(star.dataset.value);
         star.classList.toggle('selected', val <= rating);
       });
     }
 
+    function renderCounts() {
+      countsDisplay.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        countsDisplay.innerHTML += `<div>${i} estrela(s): ${voteCounts[i]}</div>`;
+      }
+    }
+
+    async function loadVisits() {
+      const res = await fetch(`${API_BASE}/visitas`);
+      const data = await res.json();
+      const total = data.find(row => row.id === 'site')?.total || '0';
+      visitDisplay.textContent = total;
+    }
+
+    async function incrementVisit() {
+      if (!localStorage.getItem('visited')) {
+        await fetch(`${API_BASE}/visitas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: 'site', total: 1 })
+        });
+        localStorage.setItem('visited', 'true');
+      }
+      await loadVisits();
+    }
+
+    async function loadVotes() {
+      const res = await fetch(`${API_BASE}/votos`);
+      const data = await res.json();
+      voteCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      data.forEach(row => {
+        const star = parseInt(row.estrela);
+        const votos = parseInt(row.votos);
+        if (!isNaN(star) && !isNaN(votos)) {
+          voteCounts[star] += votos;
+        }
+      });
+      renderCounts();
+    }
+
+    async function sendVote(newRating) {
+      if (userRating && userRating == newRating) {
+        alert("Você já votou com essa avaliação.");
+        return;
+      }
+
+      const confirmMsg = userRating
+        ? `Você já votou com ${userRating}. Deseja alterar para ${newRating}?`
+        : `Deseja votar com ${newRating} estrela(s)?`;
+
+      if (!confirm(confirmMsg)) return;
+
+      await fetch(`${API_BASE}/votos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estrela: newRating, votos: 1 })
+      });
+
+      localStorage.setItem('userRating', newRating);
+      userRating = newRating;
+      updateStars(newRating);
+      await loadVotes();
+    }
+
+    // Eventos
     stars.forEach(star => {
       star.addEventListener('click', () => {
-        const rating = parseInt(star.getAttribute('data-value'));
-        if (userRating && userRating !== rating) {
-          const confirmChange = confirm(`Você já votou com ${userRating} estrela(s). Deseja alterar para ${rating}?`);
-          if (!confirmChange) return;
-          ratingCounts[userRating]--;
-        } else if (userRating === rating) {
-          alert("Você já escolheu essa avaliação.");
-          return;
-        } else {
-          const confirmVote = confirm(`Deseja votar com ${rating} estrela(s)?`);
-          if (!confirmVote) return;
-        }
-
-        ratingCounts[rating]++;
-        userRating = rating;
-        localStorage.setItem('ratingCounts', JSON.stringify(ratingCounts));
-        localStorage.setItem('userRating', userRating);
-        updateStars(userRating);
-        updateCounts();
+        const val = parseInt(star.dataset.value);
+        sendVote(val);
       });
     });
 
-    if (userRating) updateStars(userRating);
-    updateCounts();
+    // Inicializar
+    if (userRating) updateStars(parseInt(userRating));
+    loadVotes();
+    incrementVisit();
   </script>
 
 </body>
