@@ -158,82 +158,86 @@
   </div>
 
   <script>
-    const API_BASE = "https://api.sheetbest.com/sheets/6d97376a-4c46-4890-829d-748082690a13";
+  const API_BASE = "https://api.sheetbest.com/sheets/6d97376a-4c46-4890-829d-748082690a13";
 
-    // ---------- VISITAS ----------
-    async function atualizarVisitas() {
-      // Pega valor atual
-      const res = await fetch(`${API_BASE}/visitas`);
-      const dados = await res.json();
-      let total = parseInt(dados[0].total || 0);
-      total++;
+  // ---------- VISITAS ----------
+  async function atualizarVisitas() {
+    const res = await fetch(`${API_BASE}/visitas`);
+    const dados = await res.json();
+    let total = parseInt(dados[0].total || 0);
+    total++;
 
-      // Atualiza no HTML
-      document.getElementById("visit-count").textContent = total;
+    document.getElementById("visit-count").textContent = total;
 
-      // Salva nova contagem
-      await fetch(`${API_BASE}/visitas/total/${dados[0].total}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ total: total })
-      });
+    await fetch(`${API_BASE}/visitas/total/${dados[0].total}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ total: total })
+    });
+  }
+
+  // ---------- VOTOS ----------
+  const stars = document.querySelectorAll(".star");
+  const countsDisplay = document.getElementById("rating-counts");
+
+  async function carregarVotos() {
+    const res = await fetch(`${API_BASE}/votos`);
+    const votos = await res.json();
+
+    // Ordena por estrela (caso não venha na ordem)
+    votos.sort((a, b) => parseInt(a.estrela) - parseInt(b.estrela));
+
+    countsDisplay.innerHTML = "";
+    votos.forEach(v => {
+      countsDisplay.innerHTML += `<div>${v.estrela} estrela(s): ${v.votos}</div>`;
+    });
+  }
+
+  async function votar(estrela) {
+    if (localStorage.getItem("votou")) {
+      alert("Você já votou neste dispositivo.");
+      return;
     }
 
-    // ---------- VOTOS ----------
-    const stars = document.querySelectorAll(".star");
-    const countsDisplay = document.getElementById("rating-counts");
+    const res = await fetch(`${API_BASE}/votos`);
+    const votos = await res.json();
+    const registro = votos.find(v => v.estrela === estrela.toString());
 
-    async function carregarVotos() {
-      const res = await fetch(`${API_BASE}/votos`);
-      const votos = await res.json();
-      countsDisplay.innerHTML = "";
-      votos.forEach(v => {
-        countsDisplay.innerHTML += `<div>${v.estrela} estrela(s): ${v.votos}</div>`;
-      });
-    }
+    if (!registro) return alert("Erro ao localizar estrela.");
 
-    async function votar(estrela) {
-      if (localStorage.getItem("votou")) {
-        alert("Você já votou neste dispositivo.");
-        return;
-      }
+    const novoValor = parseInt(registro.votos) + 1;
 
-      const res = await fetch(`${API_BASE}/votos/estrela/${estrela}`);
-      const dados = await res.json();
-      const atual = parseInt(dados[0].votos) + 1;
-
-      await fetch(`${API_BASE}/votos/estrela/${estrela}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ votos: atual })
-      });
-
-      localStorage.setItem("votou", estrela);
-      marcarEstrelas(estrela);
-      carregarVotos();
-    }
-
-    function marcarEstrelas(n) {
-      stars.forEach(star => {
-        const val = parseInt(star.getAttribute("data-value"));
-        star.classList.toggle("selected", val <= n);
-      });
-    }
-
-    stars.forEach(star => {
-      star.addEventListener("click", () => {
-        const valor = parseInt(star.getAttribute("data-value"));
-        votar(valor);
-      });
+    await fetch(`${API_BASE}/votos/estrela/${estrela}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ votos: novoValor })
     });
 
-    // Início
-    atualizarVisitas();
+    localStorage.setItem("votou", estrela);
+    marcarEstrelas(estrela);
     carregarVotos();
+  }
 
-    const votoSalvo = localStorage.getItem("votou");
-    if (votoSalvo) marcarEstrelas(parseInt(votoSalvo));
-  </script>
+  function marcarEstrelas(n) {
+    stars.forEach(star => {
+      const val = parseInt(star.getAttribute("data-value"));
+      star.classList.toggle("selected", val <= n);
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener("click", () => {
+      const valor = parseInt(star.getAttribute("data-value"));
+      votar(valor);
+    });
+  });
+
+  atualizarVisitas();
+  carregarVotos();
+
+  const votoSalvo = localStorage.getItem("votou");
+  if (votoSalvo) marcarEstrelas(parseInt(votoSalvo));
+</script>
 
 </body>
 </html>
