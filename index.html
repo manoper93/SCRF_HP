@@ -196,87 +196,90 @@
   </div>
 
   <script>
-    const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
-    const visitDisplay = document.getElementById('visit-count');
-    const ratingDisplay = document.getElementById('rating-counts');
-    const stars = document.querySelectorAll('.star');
-    let userRating = localStorage.getItem('userRating');
+  const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
+  const visitDisplay = document.getElementById('visit-count');
+  const ratingDisplay = document.getElementById('rating-counts');
+  const stars = document.querySelectorAll('.star');
+  let userRating = localStorage.getItem('userRating');
 
-    async function loadData() {
-      const res = await fetch(API_URL);
-      const data = await res.json();
+  async function loadData() {
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-      // Mostrar visitas
-      const visita = data.find(row => row.tipo === 'visita');
-      visitDisplay.textContent = visita ? visita.valor : '0';
+    // Somar todas as visitas
+    const totalVisitas = data
+      .filter(row => row.tipo === 'visita')
+      .reduce((acc, row) => acc + parseInt(row.valor || 0), 0);
 
-      // Mostrar votos
-      const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      data.forEach(row => {
-        const num = parseInt(row.tipo);
-        if (!isNaN(num)) votos[num] = parseInt(row.valor);
-      });
+    visitDisplay.textContent = totalVisitas;
 
-      let output = '';
-      for (let i = 1; i <= 5; i++) {
-        output += `<div>${i} estrela(s): ${votos[i] || 0}</div>`;
-      }
-      ratingDisplay.innerHTML = output;
+    // Mostrar votos por estrela
+    const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    data.forEach(row => {
+      const num = parseInt(row.tipo);
+      if (!isNaN(num)) votos[num] = (votos[num] || 0) + parseInt(row.valor);
+    });
+
+    let output = '';
+    for (let i = 1; i <= 5; i++) {
+      output += `<div>${i} estrela(s): ${votos[i] || 0}</div>`;
     }
+    ratingDisplay.innerHTML = output;
+  }
 
-    async function incrementVisit() {
-      if (!localStorage.getItem('visited')) {
-        await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tipo: 'visita', valor: 1 })
-        });
-        localStorage.setItem('visited', 'true');
-      }
-    }
-
-    async function sendVote(estrela) {
-      if (userRating && userRating == estrela) {
-        alert("Você já votou com essa avaliação.");
-        return;
-      }
-
-      const confirmMsg = userRating
-        ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrela}?`
-        : `Deseja votar com ${estrela} estrela(s)?`;
-
-      if (!confirm(confirmMsg)) return;
-
+  async function incrementVisit() {
+    if (!localStorage.getItem('visited')) {
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: String(estrela), valor: 1 })
+        body: JSON.stringify({ tipo: 'visita', valor: 1 })
       });
+      localStorage.setItem('visited', 'true');
+    }
+  }
 
-      localStorage.setItem('userRating', estrela);
-      userRating = estrela;
-      updateStars(estrela);
-      await loadData();
+  async function sendVote(estrela) {
+    if (userRating && userRating == estrela) {
+      alert("Você já votou com essa avaliação.");
+      return;
     }
 
-    function updateStars(rating) {
-      stars.forEach(star => {
-        const val = parseInt(star.dataset.value);
-        star.classList.toggle('selected', val <= rating);
-      });
-    }
+    const confirmMsg = userRating
+      ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrela}?`
+      : `Deseja votar com ${estrela} estrela(s)?`;
 
-    stars.forEach(star => {
-      star.addEventListener('click', () => {
-        const val = parseInt(star.dataset.value);
-        sendVote(val);
-      });
+    if (!confirm(confirmMsg)) return;
+
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: String(estrela), valor: 1 })
     });
 
-    if (userRating) updateStars(parseInt(userRating));
+    localStorage.setItem('userRating', estrela);
+    userRating = estrela;
+    updateStars(estrela);
+    await loadData();
+  }
 
-    incrementVisit().then(loadData);
-  </script>
+  function updateStars(rating) {
+    stars.forEach(star => {
+      const val = parseInt(star.dataset.value);
+      star.classList.toggle('selected', val <= rating);
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      const val = parseInt(star.dataset.value);
+      sendVote(val);
+    });
+  });
+
+  if (userRating) updateStars(parseInt(userRating));
+
+  incrementVisit().then(loadData);
+</script>
 
 </body>
 </html>
