@@ -218,12 +218,12 @@
   }
 
   function getDateTimeSeparated() {
-    const now = new Date();
-    return {
-      date: now.toLocaleDateString(),
-      time: now.toLocaleTimeString()
-    };
-  }
+  const now = new Date();
+  const date = now.toLocaleDateString('pt-PT'); // ou 'pt-BR'
+  const time = now.toLocaleTimeString('pt-PT', { hour12: false });
+  return { date, time };
+}
+
 
   function showLastVisit() {
     const value = localStorage.getItem('lastVisitTime');
