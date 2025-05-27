@@ -181,7 +181,7 @@
   <!-- Contador de visitas públicas -->
   <div class="visitor-counter">
   Visitas públicas: <span id="visit-count">Carregando...</span><br>
-  Última visita: <span id="last-visit">--</span>
+  Visita anterior: <span id="last-visit">--</span>
 </div>
 
 
@@ -197,7 +197,7 @@
     <div class="rating-counts" id="rating-counts">Carregando...</div>
   </div>
 
-  <script>
+ <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
   const visitDisplay = document.getElementById('visit-count');
   const lastVisitDisplay = document.getElementById('last-visit');
@@ -209,14 +209,12 @@
     const res = await fetch(API_URL);
     const data = await res.json();
 
-    // Total de visitas
     const totalVisitas = data
       .filter(row => row.tipo === 'visita')
       .reduce((acc, row) => acc + parseInt(row.valor || 0), 0);
 
     visitDisplay.textContent = totalVisitas;
 
-    // Votos por estrela
     const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     data.forEach(row => {
       const num = parseInt(row.tipo);
@@ -230,24 +228,28 @@
     ratingDisplay.innerHTML = output;
   }
 
+  function showLastVisit() {
+    const lastVisit = localStorage.getItem('lastVisitTime');
+    lastVisitDisplay.textContent = lastVisit || '--';
+  }
+
   async function incrementVisit() {
     if (!sessionStorage.getItem('visited')) {
+      // Mostrar data anterior ANTES de atualizar
+      showLastVisit();
+
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tipo: 'visita', valor: 1 })
       });
-      sessionStorage.setItem('visited', 'true');
 
-      // Salvar data/hora da visita
       const now = new Date();
       localStorage.setItem('lastVisitTime', now.toLocaleString());
+      sessionStorage.setItem('visited', 'true');
+    } else {
+      showLastVisit();
     }
-  }
-
-  function showLastVisit() {
-    const lastVisit = localStorage.getItem('lastVisitTime');
-    lastVisitDisplay.textContent = lastVisit || '--';
   }
 
   async function sendVote(estrela) {
@@ -298,13 +300,8 @@
 
   if (userRating) updateStars(parseInt(userRating));
 
-  incrementVisit().then(() => {
-    loadData();
-    showLastVisit();
-  });
+  incrementVisit().then(loadData);
 </script>
 
-
-  
 </body>
 </html>
