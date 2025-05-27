@@ -2,13 +2,16 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Módulo Motor 3D</title>
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
     body {
       margin: 0;
       background-color: #121212;
+      color: #fff;
       font-family: sans-serif;
+      overflow: hidden;
     }
 
     model-viewer {
@@ -42,6 +45,25 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    .titulo {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #ffffff;
+      font-size: 5vw;
+      font-weight: 600;
+      z-index: 20;
+      pointer-events: none;
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
+    }
+
+    @media (min-width: 600px) {
+      .titulo {
+        font-size: 2rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -51,23 +73,19 @@
     <div class="spinner"></div>
   </div>
 
+  <!-- Título da página -->
+  <h1 class="titulo">Módulo Motor 3D</h1>
+
   <!-- Visualizador 3D -->
-  <model-viewer id="viewer"
-    src="PSRF_HP_Módulo_Motor.glb"
+  <model-viewer src="PSRF_HP_Módulo_Motor.glb"
     alt="Módulo Motor"
     camera-controls
     shadow-intensity="0.5"
-    exposure="1"
+    exposure="0.9"
     environment-image="legacy"
-    ar>
+    ar
+    onload="document.getElementById('loading').style.display='none';">
   </model-viewer>
-
-  <script>
-    const viewer = document.getElementById('viewer');
-    viewer.addEventListener('load', () => {
-      document.getElementById('loading').style.display = 'none';
-    });
-  </script>
 
 </body>
 </html>
