@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -16,74 +20,170 @@
       align-items: center;
       min-height: 100vh;
     }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      height: 60px;
+      width: 60px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 1rem 1rem 0.5rem;
+      font-size: 2rem;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 1rem 2rem;
+      font-weight: normal;
+      font-size: 1.2rem;
+    }
+
     .buttons {
       display: flex;
+      gap: 1rem;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
+      margin-bottom: 2rem;
+      padding: 0 1rem;
       width: 100%;
-      max-width: 800px;
     }
+
     .btn {
-      flex: 1 1 220px;
-      max-width: 300px;
-      padding: 1rem;
-      font-size: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
       border: none;
       border-radius: 10px;
+      cursor: pointer;
       background: #003366;
       color: white;
-      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      flex: 1 1 220px;
+      max-width: 300px;
+      text-align: center;
     }
+
+    .btn:hover {
+      background: #001f4d;
+      transform: scale(1.05);
+    }
+
     .visitor-counter,
     .rating-widget {
       position: fixed;
       z-index: 999;
       padding: 10px;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0, 0, 0, 0.3);
       border-radius: 10px;
       font-size: 14px;
     }
+
     .visitor-counter {
       bottom: 10px;
       left: 10px;
     }
+
     .rating-widget {
       bottom: 10px;
       right: 10px;
       text-align: center;
     }
+
     .star {
       font-size: 28px;
       cursor: pointer;
       color: #ccc;
     }
+
     .star.selected {
       color: gold;
     }
+
     .rating-counts {
       margin-top: 5px;
+    }
+
+    .rating-counts div {
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        justify-content: center;
+        padding: 15px 10px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .logo {
+        height: 36px;
+        width: 36px;
+      }
+
+      .star {
+        font-size: 22px;
+      }
+
+      .visitor-counter,
+      .rating-widget {
+        font-size: 12px;
+        padding: 8px;
+      }
+
+      .rating-counts div {
+        font-size: 11px;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- Cabeçalho com 3 logos -->
+  <header>
+    <img src="logo_st.png" alt="Logo ST" class="logo" />
+    <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
+    <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
+  </header>
+
+  <!-- Título -->
   <h1>PSRF - Porta Serviço Rádio Frequência</h1>
   <h2>Escolha o módulo para visualizar em 3D</h2>
+
+  <!-- Botões para simulação -->
   <div class="buttons">
     <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
-    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
+    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a> 
   </div>
+
   <h2>Visualizar o Esquemático</h2>
+
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
 
+  <!-- Contador de visitas públicas -->
   <div class="visitor-counter">
     Visitas públicas: <span id="visit-count">Carregando...</span>
   </div>
 
+  <!-- Avaliação com estrelas -->
   <div class="rating-widget">
     <div>
       <span class="star" data-value="1">&#9733;</span>
@@ -106,20 +206,20 @@
       const res = await fetch(API_URL);
       const data = await res.json();
 
-      // Exibir visitas
+      // Mostrar visitas
       const visita = data.find(row => row.tipo === 'visita');
       visitDisplay.textContent = visita ? visita.valor : '0';
 
-      // Exibir votos
-      const votes = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      // Mostrar votos
+      const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
       data.forEach(row => {
         const num = parseInt(row.tipo);
-        if (!isNaN(num)) votes[num] = parseInt(row.valor);
+        if (!isNaN(num)) votos[num] = parseInt(row.valor);
       });
 
       let output = '';
       for (let i = 1; i <= 5; i++) {
-        output += `${i} estrela(s): ${votes[i] || 0}<br>`;
+        output += `<div>${i} estrela(s): ${votos[i] || 0}</div>`;
       }
       ratingDisplay.innerHTML = output;
     }
@@ -135,33 +235,34 @@
       }
     }
 
-    async function sendVote(estrelas) {
-      if (userRating && userRating == estrelas) {
+    async function sendVote(estrela) {
+      if (userRating && userRating == estrela) {
         alert("Você já votou com essa avaliação.");
         return;
       }
 
       const confirmMsg = userRating
-        ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrelas}?`
-        : `Deseja votar com ${estrelas} estrela(s)?`;
+        ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrela}?`
+        : `Deseja votar com ${estrela} estrela(s)?`;
 
       if (!confirm(confirmMsg)) return;
 
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: String(estrelas), valor: 1 })
+        body: JSON.stringify({ tipo: String(estrela), valor: 1 })
       });
 
-      localStorage.setItem('userRating', estrelas);
-      userRating = estrelas;
-      updateStars(estrelas);
+      localStorage.setItem('userRating', estrela);
+      userRating = estrela;
+      updateStars(estrela);
       await loadData();
     }
 
     function updateStars(rating) {
       stars.forEach(star => {
-        star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
+        const val = parseInt(star.dataset.value);
+        star.classList.toggle('selected', val <= rating);
       });
     }
 
