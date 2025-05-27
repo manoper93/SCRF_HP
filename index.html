@@ -228,43 +228,35 @@
   }
 
   async function incrementVisit() {
-  const today = new Date().toISOString().split('T')[0]; // ex: "2025-05-27"
-  const lastVisit = localStorage.getItem('lastVisitDate');
-
-  if (lastVisit !== today) {
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: 'visita', valor: 1 })
-    });
-    localStorage.setItem('lastVisitDate', today);
+    if (!sessionStorage.getItem('visited')) {
+      await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'visita', valor: 1 })
+      });
+      sessionStorage.setItem('visited', 'true');
+    }
   }
-}
 
-
-  async function sendVote(novoVoto) {
-    if (userRating && userRating == novoVoto) {
+  async function sendVote(estrela) {
+    if (userRating && userRating == estrela) {
       alert("Você já votou com essa avaliação.");
       return;
     }
 
-    const confirmar = confirm(
-      userRating
-        ? `Você já votou com ${userRating} estrela(s). Deseja trocar para ${novoVoto}?`
-        : `Deseja votar com ${novoVoto} estrela(s)?`
-    );
+    const confirmMsg = userRating
+      ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrela}?`
+      : `Deseja votar com ${estrela} estrela(s)?`;
 
-    if (!confirmar) return;
+    if (!confirm(confirmMsg)) return;
 
-    // Envia incremento para o novo voto
     await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: String(novoVoto), valor: 1 })
+      body: JSON.stringify({ tipo: String(estrela), valor: 1 })
     });
 
-    // Se for alteração, envia decremento do voto anterior
-    if (userRating && userRating !== novoVoto) {
+    if (userRating && userRating !== estrela) {
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -272,9 +264,9 @@
       });
     }
 
-    localStorage.setItem('userRating', novoVoto);
-    userRating = novoVoto;
-    updateStars(novoVoto);
+    localStorage.setItem('userRating', estrela);
+    userRating = estrela;
+    updateStars(estrela);
     await loadData();
   }
 
@@ -296,6 +288,7 @@
 
   incrementVisit().then(loadData);
 </script>
+
   
 </body>
 </html>
