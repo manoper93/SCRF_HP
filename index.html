@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Avaliação e Visitas</title>
   <style>
-    :root {
-      font-size: 16px;
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -19,7 +19,6 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
     header {
@@ -34,17 +33,18 @@
     .logo {
       height: 60px;
       width: 60px;
+      object-fit: contain;
     }
 
     h1 {
       text-align: center;
+      font-size: 2.2rem;
       margin: 1rem;
-      font-size: 2rem;
     }
 
     h2 {
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       margin-bottom: 1rem;
     }
 
@@ -53,14 +53,15 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 1rem;
-      padding: 1rem;
       width: 100%;
       max-width: 800px;
+      padding: 0 1rem 2rem;
     }
 
     .btn {
-      flex: 1 1 220px;
+      flex: 1 1 45%;
       max-width: 300px;
+      min-width: 160px;
       padding: 1rem;
       font-size: 1rem;
       border: none;
@@ -69,6 +70,7 @@
       color: white;
       cursor: pointer;
       transition: background 0.3s, transform 0.2s;
+      text-align: center;
     }
 
     .btn:hover {
@@ -80,10 +82,10 @@
     .rating-widget {
       position: fixed;
       z-index: 999;
-      background: rgba(0,0,0,0.3);
-      padding: 0.8rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
       border-radius: 10px;
-      font-size: 1rem;
+      font-size: 14px;
     }
 
     .visitor-counter {
@@ -98,7 +100,7 @@
     }
 
     .star {
-      font-size: 2rem;
+      font-size: 28px;
       cursor: pointer;
       color: #ccc;
     }
@@ -108,38 +110,40 @@
     }
 
     .rating-counts {
-      margin-top: 0.5rem;
+      margin-top: 6px;
       text-align: left;
-      font-size: 0.875rem;
+    }
+
+    .rating-counts div {
+      font-size: 13px;
     }
 
     @media (max-width: 600px) {
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
       }
 
       h2 {
-        font-size: 1rem;
+        font-size: 1.1rem;
+      }
+
+      .btn {
+        flex: 1 1 100%;
+        font-size: 0.95rem;
       }
 
       .star {
-        font-size: 1.5rem;
+        font-size: 22px;
       }
 
       .visitor-counter,
       .rating-widget {
-        font-size: 0.875rem;
-        padding: 0.6rem;
+        font-size: 12px;
+        padding: 8px;
       }
 
-      .rating-widget {
-        bottom: 70px; /* move um pouco para cima em telas pequenas */
-        right: 10px;
-      }
-
-      .visitor-counter {
-        bottom: 10px;
-        left: 10px;
+      .rating-counts div {
+        font-size: 11px;
       }
     }
   </style>
@@ -192,14 +196,15 @@
         let total = parseInt(dados[0].total || 0);
         total++;
         document.getElementById("visit-count").textContent = total;
+
         await fetch(`${API_BASE}/tabs/visitas/total/${dados[0].total}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ total })
+          body: JSON.stringify({ total: total })
         });
       } catch (error) {
         document.getElementById("visit-count").textContent = "Erro";
-        console.error(error);
+        console.error("Erro ao contar visitas:", error);
       }
     }
 
@@ -217,6 +222,7 @@
         });
       } catch (error) {
         countsDisplay.innerHTML = "<div>Erro ao carregar votos</div>";
+        console.error("Erro ao carregar votos:", error);
       }
     }
 
@@ -245,6 +251,7 @@
         carregarVotos();
       } catch (error) {
         alert("Erro ao votar.");
+        console.error("Erro ao votar:", error);
       }
     }
 
@@ -262,9 +269,9 @@
       });
     });
 
+    // Inicialização
     atualizarVisitas();
     carregarVotos();
-
     const votoSalvo = localStorage.getItem("votou");
     if (votoSalvo) marcarEstrelas(parseInt(votoSalvo));
   </script>
