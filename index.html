@@ -177,16 +177,17 @@
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
-
+  
   <!-- Contador de visitas públicas -->
-  <div class="visitor-counter">
-  Visitas públicas: <span id="visit-count">Carregando...</span><br>
-  Visita anterior: <span id="last-visit">--</span>
+<div class="visitor-counter">
+  <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
+  <div>Visita anterior:</div>
+  <div><span id="last-visit-date">--</span></div>
+  <div><span id="last-visit-time">--</span></div>
 </div>
 
-
-  <!-- Avaliação com estrelas -->
-  <div class="rating-widget">
+<!-- Avaliação com estrelas -->
+<div class="rating-widget">
   <div id="stars">
     <span class="star" data-value="5">&#9733;</span>
     <span class="star" data-value="4">&#9733;</span>
@@ -195,14 +196,18 @@
     <span class="star" data-value="1">&#9733;</span>
   </div>
   <div class="rating-counts" id="rating-counts">Carregando...</div>
-  <div style="margin-top: 5px; font-size: 12px;">Última votação: <span id="last-vote">--</span></div>
+  <div style="margin-top: 6px;">Última votação:</div>
+  <div><span id="last-vote-date">--</span></div>
+  <div><span id="last-vote-time">--</span></div>
 </div>
 
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
   const visitDisplay = document.getElementById('visit-count');
-  const lastVisitDisplay = document.getElementById('last-visit');
-  const lastVoteDisplay = document.getElementById('last-vote');
+  const lastVisitDate = document.getElementById('last-visit-date');
+  const lastVisitTime = document.getElementById('last-visit-time');
+  const lastVoteDate = document.getElementById('last-vote-date');
+  const lastVoteTime = document.getElementById('last-vote-time');
   const ratingDisplay = document.getElementById('rating-counts');
   const stars = document.querySelectorAll('.star');
   let userRating = localStorage.getItem('userRating');
@@ -211,8 +216,36 @@
     return new Date().toISOString().replace('T', ' ').substring(0, 19);
   }
 
-  function getNowLocale() {
-    return new Date().toLocaleString();
+  function getDateTimeSeparated() {
+    const now = new Date();
+    return {
+      date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString()
+    };
+  }
+
+  function showLastVisit() {
+    const value = localStorage.getItem('lastVisitTime');
+    if (value) {
+      const [date, time] = value.split(', ');
+      lastVisitDate.textContent = date || '--';
+      lastVisitTime.textContent = time || '--';
+    } else {
+      lastVisitDate.textContent = '--';
+      lastVisitTime.textContent = '--';
+    }
+  }
+
+  function showLastVote() {
+    const value = localStorage.getItem('lastVoteTime');
+    if (value) {
+      const [date, time] = value.split(', ');
+      lastVoteDate.textContent = date || '--';
+      lastVoteTime.textContent = time || '--';
+    } else {
+      lastVoteDate.textContent = '--';
+      lastVoteTime.textContent = '--';
+    }
   }
 
   async function loadData() {
@@ -239,16 +272,6 @@
     showLastVote();
   }
 
-  function showLastVisit() {
-    const lastVisit = localStorage.getItem('lastVisitTime');
-    lastVisitDisplay.textContent = lastVisit || '--';
-  }
-
-  function showLastVote() {
-    const lastVote = localStorage.getItem('lastVoteTime');
-    lastVoteDisplay.textContent = lastVote || '--';
-  }
-
   async function incrementVisit() {
     if (!sessionStorage.getItem('visited')) {
       showLastVisit();
@@ -259,7 +282,8 @@
         body: JSON.stringify({ tipo: 'visita', valor: 1, date: getNowISO() })
       });
 
-      localStorage.setItem('lastVisitTime', getNowLocale());
+      const { date, time } = getDateTimeSeparated();
+      localStorage.setItem('lastVisitTime', `${date}, ${time}`);
       sessionStorage.setItem('visited', 'true');
     } else {
       showLastVisit();
@@ -292,8 +316,9 @@
       });
     }
 
+    const { date, time } = getDateTimeSeparated();
+    localStorage.setItem('lastVoteTime', `${date}, ${time}`);
     localStorage.setItem('userRating', estrela);
-    localStorage.setItem('lastVoteTime', getNowLocale());
     userRating = estrela;
     updateStars(estrela);
     await loadData();
