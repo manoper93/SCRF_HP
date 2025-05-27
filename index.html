@@ -180,8 +180,10 @@
 
   <!-- Contador de visitas públicas -->
   <div class="visitor-counter">
-    Visitas: <span id="visit-count">Carregando...</span>
-  </div>
+  Visitas públicas: <span id="visit-count">Carregando...</span><br>
+  Última visita: <span id="last-visit">--</span>
+</div>
+
 
   <!-- Avaliação com estrelas -->
   <div class="rating-widget">
@@ -198,6 +200,7 @@
   <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
   const visitDisplay = document.getElementById('visit-count');
+  const lastVisitDisplay = document.getElementById('last-visit');
   const ratingDisplay = document.getElementById('rating-counts');
   const stars = document.querySelectorAll('.star');
   let userRating = localStorage.getItem('userRating');
@@ -235,7 +238,16 @@
         body: JSON.stringify({ tipo: 'visita', valor: 1 })
       });
       sessionStorage.setItem('visited', 'true');
+
+      // Salvar data/hora da visita
+      const now = new Date();
+      localStorage.setItem('lastVisitTime', now.toLocaleString());
     }
+  }
+
+  function showLastVisit() {
+    const lastVisit = localStorage.getItem('lastVisitTime');
+    lastVisitDisplay.textContent = lastVisit || '--';
   }
 
   async function sendVote(estrela) {
@@ -286,8 +298,12 @@
 
   if (userRating) updateStars(parseInt(userRating));
 
-  incrementVisit().then(loadData);
+  incrementVisit().then(() => {
+    loadData();
+    showLastVisit();
+  });
 </script>
+
 
   
 </body>
