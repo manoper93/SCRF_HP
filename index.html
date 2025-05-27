@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       padding: 0;
@@ -18,23 +15,6 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-    }
-    header {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px 20px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .logo {
-      height: 60px;
-      width: 60px;
-    }
-    h1, h2 {
-      text-align: center;
-      margin: 1rem;
     }
     .buttons {
       display: flex;
@@ -55,12 +35,6 @@
       background: #003366;
       color: white;
       cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-      text-align: center;
-    }
-    .btn:hover {
-      background: #001f4d;
-      transform: scale(1.05);
     }
     .visitor-counter,
     .rating-widget {
@@ -91,48 +65,25 @@
     .rating-counts {
       margin-top: 5px;
     }
-    .rating-counts div {
-      font-size: 13px;
-    }
-    @media (max-width: 500px) {
-      .star {
-        font-size: 22px;
-      }
-      .visitor-counter,
-      .rating-widget {
-        font-size: 12px;
-        padding: 8px;
-      }
-    }
   </style>
 </head>
 <body>
 
-  <header>
-    <img src="logo_st.png" alt="Logo ST" class="logo" />
-    <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
-    <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
-  </header>
-
   <h1>PSRF - Porta Serviço Rádio Frequência</h1>
   <h2>Escolha o módulo para visualizar em 3D</h2>
-
   <div class="buttons">
     <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
     <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
   </div>
-
   <h2>Visualizar o Esquemático</h2>
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
 
-  <!-- Visitas -->
   <div class="visitor-counter">
-    Visitas públicas: <span id="visit-count">...</span>
+    Visitas públicas: <span id="visit-count">Carregando...</span>
   </div>
 
-  <!-- Avaliação -->
   <div class="rating-widget">
     <div>
       <span class="star" data-value="1">&#9733;</span>
@@ -145,82 +96,73 @@
   </div>
 
   <script>
-    const API_BASE = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
+    const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
     const visitDisplay = document.getElementById('visit-count');
-    const countsDisplay = document.getElementById('rating-counts');
+    const ratingDisplay = document.getElementById('rating-counts');
     const stars = document.querySelectorAll('.star');
     let userRating = localStorage.getItem('userRating');
-    let voteCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-    function updateStars(rating) {
-      stars.forEach(star => {
-        const val = parseInt(star.dataset.value);
-        star.classList.toggle('selected', val <= rating);
-      });
-    }
-
-    function renderCounts() {
-      countsDisplay.innerHTML = '';
-      for (let i = 1; i <= 5; i++) {
-        countsDisplay.innerHTML += `<div>${i} estrela(s): ${voteCounts[i]}</div>`;
-      }
-    }
-
-    async function loadVisits() {
-      const res = await fetch(`${API_BASE}/visitas`);
+    async function loadData() {
+      const res = await fetch(API_URL);
       const data = await res.json();
-      const total = data.find(row => row.id === 'site')?.total || '0';
-      visitDisplay.textContent = total;
+
+      // Exibir visitas
+      const visita = data.find(row => row.tipo === 'visita');
+      visitDisplay.textContent = visita ? visita.valor : '0';
+
+      // Exibir votos
+      const votes = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      data.forEach(row => {
+        const num = parseInt(row.tipo);
+        if (!isNaN(num)) votes[num] = parseInt(row.valor);
+      });
+
+      let output = '';
+      for (let i = 1; i <= 5; i++) {
+        output += `${i} estrela(s): ${votes[i] || 0}<br>`;
+      }
+      ratingDisplay.innerHTML = output;
     }
 
     async function incrementVisit() {
       if (!localStorage.getItem('visited')) {
-        await fetch(`${API_BASE}/visitas`, {
+        await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: 'site', total: 1 })
+          body: JSON.stringify({ tipo: 'visita', valor: 1 })
         });
         localStorage.setItem('visited', 'true');
       }
-      await loadVisits();
     }
 
-    async function loadVotes() {
-      const res = await fetch(`${API_BASE}/votos`);
-      const data = await res.json();
-      voteCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      data.forEach(row => {
-        const star = parseInt(row.estrela);
-        const votos = parseInt(row.votos);
-        if (!isNaN(star) && !isNaN(votos)) {
-          voteCounts[star] += votos;
-        }
-      });
-      renderCounts();
-    }
-
-    async function sendVote(newRating) {
-      if (userRating && userRating == newRating) {
+    async function sendVote(estrelas) {
+      if (userRating && userRating == estrelas) {
         alert("Você já votou com essa avaliação.");
         return;
       }
 
       const confirmMsg = userRating
-        ? `Você já votou com ${userRating}. Deseja alterar para ${newRating}?`
-        : `Deseja votar com ${newRating} estrela(s)?`;
+        ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrelas}?`
+        : `Deseja votar com ${estrelas} estrela(s)?`;
 
       if (!confirm(confirmMsg)) return;
 
-      await fetch(`${API_BASE}/votos`, {
+      await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ estrela: newRating, votos: 1 })
+        body: JSON.stringify({ tipo: String(estrelas), valor: 1 })
       });
 
-      localStorage.setItem('userRating', newRating);
-      userRating = newRating;
-      updateStars(newRating);
-      await loadVotes();
+      localStorage.setItem('userRating', estrelas);
+      userRating = estrelas;
+      updateStars(estrelas);
+      await loadData();
+    }
+
+    function updateStars(rating) {
+      stars.forEach(star => {
+        star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
+      });
     }
 
     stars.forEach(star => {
@@ -231,8 +173,8 @@
     });
 
     if (userRating) updateStars(parseInt(userRating));
-    loadVotes();
-    incrementVisit();
+
+    incrementVisit().then(loadData);
   </script>
 
 </body>
