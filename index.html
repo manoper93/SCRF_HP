@@ -2,49 +2,94 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Simulação 3D - Escolha o Módulo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
-      background: #121212;
+      background: #3cb4e6; /* Cor de fundo do logo ST */
       color: #fff;
+      font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
     }
+
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .logo {
+      height: 40px;
+    }
+
     h1 {
-      margin-bottom: 2rem;
+      text-align: center;
+      margin: 1rem 0 0.5rem;
+      font-size: 1.8rem;
     }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-weight: normal;
+    }
+
     .buttons {
       display: flex;
-      gap: 2rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
     }
+
     .btn {
       padding: 1rem 2rem;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      background: #1e88e5;
+      background: #003366;
       color: white;
       transition: background 0.3s, transform 0.2s;
     }
+
     .btn:hover {
-      background: #1565c0;
+      background: #001f4d;
       transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+      .btn {
+        width: 80%;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- Logo -->
+  <header>
+    <img src="logo_st.png" alt="Logo ST" class="logo" />
+  </header>
+
+  <!-- Título -->
   <h1>PSRF - Porta Serviço Rádio Frequência</h1>
   <h2>Escolha o módulo para visualizar em 3D</h2>
+
+  <!-- Botões para simulação e esquema -->
   <div class="buttons">
     <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
     <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
+    <a href="esquematico.png" target="_blank"><button class="btn">📐 Esquemático</button></a>
   </div>
 
 </body>
