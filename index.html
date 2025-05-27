@@ -5,13 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PSRF - Porta Serviço Rádio Frequência</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      padding: 0;
       background: #3cb4e6;
       color: #fff;
       font-family: sans-serif;
@@ -25,7 +20,6 @@
       width: 100%;
       display: flex;
       justify-content: flex-end;
-      align-items: center;
       padding: 10px 20px;
       gap: 12px;
       flex-wrap: wrap;
@@ -34,20 +28,10 @@
     .logo {
       height: 60px;
       width: 60px;
-      border-radius: 2%;
     }
 
-    h1 {
+    h1, h2 {
       text-align: center;
-      margin: 1rem 1rem 0.5rem;
-      font-size: 2rem;
-    }
-
-    h2 {
-      text-align: center;
-      margin: 0 1rem 2rem;
-      font-weight: normal;
-      font-size: 1.2rem;
     }
 
     .buttons {
@@ -55,49 +39,23 @@
       gap: 1rem;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 2rem;
-      padding: 0 1rem;
-      width: 100%;
+      margin: 2rem 0;
     }
 
     .btn {
       padding: 1rem 2rem;
-      font-size: 1.1rem;
+      font-size: 1rem;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       background: #003366;
       color: white;
-      transition: background 0.3s, transform 0.2s;
-      flex: 1 1 220px;
-      max-width: 300px;
-      text-align: center;
+      transition: 0.3s;
     }
 
     .btn:hover {
       background: #001f4d;
       transform: scale(1.05);
-    }
-
-    @media (max-width: 600px) {
-      header {
-        justify-content: center;
-        padding: 15px 10px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      h2 {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .logo {
-        height: 36px;
-        width: 36px;
-      }
     }
 
     .visitor-counter {
@@ -112,40 +70,45 @@
       bottom: 10px;
       right: 10px;
       z-index: 999;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0,0,0,0.3);
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
+      font-size: 14px;
     }
 
     .star {
       font-size: 24px;
       cursor: pointer;
       color: #ccc;
-      transition: color 0.2s;
     }
 
     .star.selected {
       color: gold;
     }
+
+    .rating-counts {
+      margin-top: 5px;
+    }
+
+    .rating-counts div {
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Cabeçalho com 3 logos -->
   <header>
     <img src="logo_st.png" alt="Logo ST" class="logo" />
     <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
     <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
   </header>
 
-  <!-- Título -->
   <h1>PSRF - Porta Serviço Rádio Frequência</h1>
   <h2>Escolha o módulo para visualizar em 3D</h2>
 
-  <!-- Botões para simulação -->
   <div class="buttons">
     <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
-    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a> 
+    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
   </div>
 
   <h2>Visualizar o Esquemático</h2>
@@ -154,25 +117,42 @@
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
 
-  <!-- Contador de visitas no canto inferior esquerdo -->
+  <!-- Contador de visitas simulado -->
   <div class="visitor-counter">
-    <a href="https://github.com/manoper93/PSRF" target="_blank">
-      <img src="https://visitor-badge.laobi.icu/badge?page_id=manoper93.PSRF" alt="Contador de visitas no GitHub" />
-    </a>
+    <span>Visitas: <span id="visit-count">0</span></span>
   </div>
 
-  <!-- Avaliador de 5 estrelas no canto inferior direito -->
+  <!-- Avaliação com contadores -->
   <div class="rating-widget">
-    <span class="star" data-value="1">&#9733;</span>
-    <span class="star" data-value="2">&#9733;</span>
-    <span class="star" data-value="3">&#9733;</span>
-    <span class="star" data-value="4">&#9733;</span>
-    <span class="star" data-value="5">&#9733;</span>
+    <div>
+      <span class="star" data-value="1">&#9733;</span>
+      <span class="star" data-value="2">&#9733;</span>
+      <span class="star" data-value="3">&#9733;</span>
+      <span class="star" data-value="4">&#9733;</span>
+      <span class="star" data-value="5">&#9733;</span>
+    </div>
+    <div class="rating-counts" id="rating-counts"></div>
   </div>
 
   <script>
+    // Simula contador de visitas local
+    let visitCount = localStorage.getItem('visitCount') || 0;
+    visitCount++;
+    localStorage.setItem('visitCount', visitCount);
+    document.getElementById('visit-count').textContent = visitCount;
+
+    // Avaliação
     const stars = document.querySelectorAll('.star');
-    const savedRating = localStorage.getItem('userRating');
+    const countsDisplay = document.getElementById('rating-counts');
+    let ratingCounts = JSON.parse(localStorage.getItem('ratingCounts')) || {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    let voted = localStorage.getItem('voted');
+
+    function updateCounts() {
+      countsDisplay.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        countsDisplay.innerHTML += `<div>${i} estrela(s): ${ratingCounts[i]}</div>`;
+      }
+    }
 
     function updateStars(rating) {
       stars.forEach(star => {
@@ -183,14 +163,23 @@
 
     stars.forEach(star => {
       star.addEventListener('click', () => {
-        const rating = parseInt(star.getAttribute('data-value'));
-        localStorage.setItem('userRating', rating);
-        updateStars(rating);
+        if (!voted) {
+          const rating = parseInt(star.getAttribute('data-value'));
+          ratingCounts[rating]++;
+          localStorage.setItem('ratingCounts', JSON.stringify(ratingCounts));
+          localStorage.setItem('voted', true);
+          updateStars(rating);
+          updateCounts();
+        } else {
+          alert("Você já avaliou neste dispositivo.");
+        }
       });
     });
 
-    if (savedRating) {
-      updateStars(parseInt(savedRating));
+    updateCounts();
+    if (voted) {
+      const stored = Object.entries(ratingCounts).find(([_, count]) => count > 0);
+      if (stored) updateStars(parseInt(stored[0]));
     }
   </script>
 
