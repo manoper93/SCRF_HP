@@ -16,64 +16,21 @@
       min-height: 100vh;
     }
 
-    header {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      padding: 10px;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .logo {
-      height: 60px;
-      width: 60px;
-    }
-
     h1, h2 {
       text-align: center;
-      margin: 1rem;
+      margin-top: 1rem;
     }
 
-    .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
-      width: 100%;
-      max-width: 800px;
-    }
-
-    .btn {
-      flex: 1 1 220px;
-      max-width: 300px;
-      padding: 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 10px;
-      background: #003366;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s, transform 0.2s;
-    }
-
-    .btn:hover {
-      background: #001f4d;
-      transform: scale(1.05);
-    }
-
-    .visitor-counter,
-    .rating-widget {
+    .counter, .rating-widget {
       position: fixed;
       z-index: 999;
-      background: rgba(0,0,0,0.3);
+      background: rgba(0, 0, 0, 0.4);
       padding: 10px;
-      border-radius: 10px;
+      border-radius: 8px;
       font-size: 14px;
     }
 
-    .visitor-counter {
+    .counter {
       bottom: 10px;
       left: 10px;
     }
@@ -95,57 +52,27 @@
     }
 
     .rating-counts {
-      margin-top: 5px;
-    }
-
-    .rating-counts div {
-      font-size: 13px;
+      margin-top: 8px;
+      text-align: left;
     }
 
     @media (max-width: 500px) {
-      .star {
-        font-size: 22px;
-      }
-
-      .visitor-counter,
-      .rating-widget {
-        font-size: 12px;
-        padding: 8px;
-      }
-
-      .rating-counts div {
-        font-size: 11px;
-      }
+      .star { font-size: 22px; }
+      .counter, .rating-widget { font-size: 12px; padding: 8px; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <img src="logo_st.png" alt="Logo ST" class="logo" />
-    <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
-    <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
-  </header>
-
   <h1>PSRF - Porta Serviço Rádio Frequência</h1>
-  <h2>Escolha o módulo para visualizar em 3D</h2>
+  <h2>Avalie o site e acompanhe as visitas</h2>
 
-  <div class="buttons">
-    <a href="motor.html"><button class="btn">⚙️ Módulo Motor</button></a>
-    <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a>
-  </div>
-
-  <h2>Visualizar o Esquemático</h2>
-  <div class="buttons">
-    <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
-  </div>
-
-  <!-- Visitas -->
-  <div class="visitor-counter">
+  <!-- Contador de Visitas -->
+  <div class="counter">
     Visitas: <span id="visit-count">...</span>
   </div>
 
-  <!-- Avaliação -->
+  <!-- Avaliação com estrelas -->
   <div class="rating-widget">
     <div>
       <span class="star" data-value="1">&#9733;</span>
@@ -157,22 +84,28 @@
     <div class="rating-counts" id="rating-counts"></div>
   </div>
 
-  <!-- SCRIPT AO FINAL PARA GARANTIR QUE O DOM ESTÁ PRONTO -->
   <script>
     const API_BASE = "https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b";
 
     // VISITAS
     async function atualizarVisitas() {
-      const res = await fetch(`${API_BASE}/visitas`);
-      const dados = await res.json();
-      let total = parseInt(dados[0].total || 0);
-      total++;
-      document.getElementById("visit-count").textContent = total;
-      await fetch(`${API_BASE}/visitas/total/${dados[0].total}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ total: total })
-      });
+      try {
+        const res = await fetch(`${API_BASE}/tabs/visitas`);
+        const data = await res.json();
+        let total = parseInt(data[0].total || 0);
+        total++;
+
+        document.getElementById("visit-count").textContent = total;
+
+        await fetch(`${API_BASE}/tabs/visitas/total/${data[0].total}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ total })
+        });
+      } catch (err) {
+        console.error("Erro ao atualizar visitas:", err);
+        document.getElementById("visit-count").textContent = "Erro";
+      }
     }
 
     // VOTOS
@@ -180,13 +113,18 @@
     const countsDisplay = document.getElementById("rating-counts");
 
     async function carregarVotos() {
-      const res = await fetch(`${API_BASE}/votos`);
-      const votos = await res.json();
-      votos.sort((a, b) => parseInt(a.estrela) - parseInt(b.estrela));
-      countsDisplay.innerHTML = "";
-      votos.forEach(v => {
-        countsDisplay.innerHTML += `<div>${v.estrela} estrela(s): ${v.votos}</div>`;
-      });
+      try {
+        const res = await fetch(`${API_BASE}/tabs/votos`);
+        const votos = await res.json();
+        votos.sort((a, b) => parseInt(a.estrela) - parseInt(b.estrela));
+
+        countsDisplay.innerHTML = "";
+        votos.forEach(v => {
+          countsDisplay.innerHTML += `<div>${v.estrela} estrela(s): ${v.votos}</div>`;
+        });
+      } catch (err) {
+        countsDisplay.innerHTML = "<div>Erro ao carregar votos.</div>";
+      }
     }
 
     async function votar(estrela) {
@@ -195,21 +133,27 @@
         return;
       }
 
-      const res = await fetch(`${API_BASE}/votos`);
-      const votos = await res.json();
-      const registro = votos.find(v => v.estrela === estrela.toString());
-      if (!registro) return alert("Erro ao localizar estrela.");
-      const novoValor = parseInt(registro.votos) + 1;
+      try {
+        const res = await fetch(`${API_BASE}/tabs/votos`);
+        const votos = await res.json();
+        const registro = votos.find(v => v.estrela === estrela.toString());
 
-      await fetch(`${API_BASE}/votos/estrela/${estrela}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ votos: novoValor })
-      });
+        if (!registro) return alert("Erro ao localizar estrela.");
 
-      localStorage.setItem("votou", estrela);
-      marcarEstrelas(estrela);
-      carregarVotos();
+        const novoValor = parseInt(registro.votos) + 1;
+
+        await fetch(`${API_BASE}/tabs/votos/estrela/${estrela}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ votos: novoValor })
+        });
+
+        localStorage.setItem("votou", estrela);
+        marcarEstrelas(estrela);
+        carregarVotos();
+      } catch (err) {
+        alert("Erro ao votar.");
+      }
     }
 
     function marcarEstrelas(n) {
