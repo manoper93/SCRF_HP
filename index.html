@@ -228,15 +228,19 @@
   }
 
   async function incrementVisit() {
-    if (!localStorage.getItem('visited')) {
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'visita', valor: 1 })
-      });
-      localStorage.setItem('visited', 'true');
-    }
+  const today = new Date().toISOString().split('T')[0]; // ex: "2025-05-27"
+  const lastVisit = localStorage.getItem('lastVisitDate');
+
+  if (lastVisit !== today) {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: 'visita', valor: 1 })
+    });
+    localStorage.setItem('lastVisitDate', today);
   }
+}
+
 
   async function sendVote(novoVoto) {
     if (userRating && userRating == novoVoto) {
