@@ -3,15 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PSRF - Porta Serviço Rádio Frequência</title>
+  <title>PSRF - Avaliação e Visitas</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      padding: 0;
       background: #3cb4e6;
       color: #fff;
       font-family: sans-serif;
@@ -25,9 +20,8 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      align-items: center;
-      padding: 10px 20px;
-      gap: 12px;
+      padding: 10px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -38,15 +32,7 @@
 
     h1, h2 {
       text-align: center;
-      margin: 1rem 1rem 0.5rem;
-    }
-
-    h1 {
-      font-size: 2rem;
-    }
-
-    h2 {
-      font-size: 1.2rem;
+      margin: 1rem;
     }
 
     .buttons {
@@ -70,7 +56,6 @@
       color: white;
       cursor: pointer;
       transition: background 0.3s, transform 0.2s;
-      text-align: center;
     }
 
     .btn:hover {
@@ -82,8 +67,8 @@
     .rating-widget {
       position: fixed;
       z-index: 999;
+      background: rgba(0,0,0,0.3);
       padding: 10px;
-      background: rgba(0, 0, 0, 0.3);
       border-radius: 10px;
       font-size: 14px;
     }
@@ -131,14 +116,6 @@
       .rating-counts div {
         font-size: 11px;
       }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      h2 {
-        font-size: 1rem;
-      }
     }
   </style>
 </head>
@@ -159,17 +136,16 @@
   </div>
 
   <h2>Visualizar o Esquemático</h2>
-
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
 
-  <!-- Contador de visitas simulado -->
+  <!-- Visitas -->
   <div class="visitor-counter">
-    Visitas: <span id="visit-count">0</span>
+    Visitas: <span id="visit-count">...</span>
   </div>
 
-  <!-- Avaliação com contadores -->
+  <!-- Avaliação -->
   <div class="rating-widget">
     <div>
       <span class="star" data-value="1">&#9733;</span>
@@ -182,52 +158,81 @@
   </div>
 
   <script>
-    // Simula contador de visitas
-    let visitCount = localStorage.getItem('visitCount') || 0;
-    visitCount++;
-    localStorage.setItem('visitCount', visitCount);
-    document.getElementById('visit-count').textContent = visitCount;
+    const API_BASE = "https://api.sheetbest.com/sheets/6d97376a-4c46-4890-829d-748082690a13";
 
-    // Avaliação
-    const stars = document.querySelectorAll('.star');
-    const countsDisplay = document.getElementById('rating-counts');
-    let ratingCounts = JSON.parse(localStorage.getItem('ratingCounts')) || {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
-    let voted = localStorage.getItem('voted');
+    // ---------- VISITAS ----------
+    async function atualizarVisitas() {
+      // Pega valor atual
+      const res = await fetch(`${API_BASE}/visitas`);
+      const dados = await res.json();
+      let total = parseInt(dados[0].total || 0);
+      total++;
 
-    function updateCounts() {
-      countsDisplay.innerHTML = '';
-      for (let i = 1; i <= 5; i++) {
-        countsDisplay.innerHTML += `<div>${i} estrela(s): ${ratingCounts[i]}</div>`;
-      }
+      // Atualiza no HTML
+      document.getElementById("visit-count").textContent = total;
+
+      // Salva nova contagem
+      await fetch(`${API_BASE}/visitas/total/${dados[0].total}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ total: total })
+      });
     }
 
-    function updateStars(rating) {
+    // ---------- VOTOS ----------
+    const stars = document.querySelectorAll(".star");
+    const countsDisplay = document.getElementById("rating-counts");
+
+    async function carregarVotos() {
+      const res = await fetch(`${API_BASE}/votos`);
+      const votos = await res.json();
+      countsDisplay.innerHTML = "";
+      votos.forEach(v => {
+        countsDisplay.innerHTML += `<div>${v.estrela} estrela(s): ${v.votos}</div>`;
+      });
+    }
+
+    async function votar(estrela) {
+      if (localStorage.getItem("votou")) {
+        alert("Você já votou neste dispositivo.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/votos/estrela/${estrela}`);
+      const dados = await res.json();
+      const atual = parseInt(dados[0].votos) + 1;
+
+      await fetch(`${API_BASE}/votos/estrela/${estrela}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ votos: atual })
+      });
+
+      localStorage.setItem("votou", estrela);
+      marcarEstrelas(estrela);
+      carregarVotos();
+    }
+
+    function marcarEstrelas(n) {
       stars.forEach(star => {
-        const val = parseInt(star.getAttribute('data-value'));
-        star.classList.toggle('selected', val <= rating);
+        const val = parseInt(star.getAttribute("data-value"));
+        star.classList.toggle("selected", val <= n);
       });
     }
 
     stars.forEach(star => {
-      star.addEventListener('click', () => {
-        if (!voted) {
-          const rating = parseInt(star.getAttribute('data-value'));
-          ratingCounts[rating]++;
-          localStorage.setItem('ratingCounts', JSON.stringify(ratingCounts));
-          localStorage.setItem('voted', true);
-          updateStars(rating);
-          updateCounts();
-        } else {
-          alert("Você já avaliou neste dispositivo.");
-        }
+      star.addEventListener("click", () => {
+        const valor = parseInt(star.getAttribute("data-value"));
+        votar(valor);
       });
     });
 
-    updateCounts();
-    if (voted) {
-      const stored = Object.entries(ratingCounts).find(([_, count]) => count > 0);
-      if (stored) updateStars(parseInt(stored[0]));
-    }
+    // Início
+    atualizarVisitas();
+    carregarVotos();
+
+    const votoSalvo = localStorage.getItem("votou");
+    if (votoSalvo) marcarEstrelas(parseInt(votoSalvo));
   </script>
 
 </body>
