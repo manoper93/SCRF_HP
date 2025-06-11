@@ -230,6 +230,23 @@
     };
   }
 
+  async function getLocation() {
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      const data = await res.json();
+      return `${data.city}, ${data.region}, ${data.country_name}`;
+    } catch (e) {
+      return 'Localização desconhecida';
+    }
+  }
+
+  function getDeviceModel() {
+    const ua = navigator.userAgent;
+    if (/mobile/i.test(ua)) return "Celular";
+    if (/tablet/i.test(ua)) return "Tablet";
+    return "Desktop";
+  }
+
   function showLastVisit() {
     const value = localStorage.getItem('lastVisitTime');
     if (value) {
@@ -292,13 +309,18 @@
     if (!sessionStorage.getItem('visited')) {
       showLastVisit();
 
+      const localizacao = await getLocation();
+      const dispositivo = getDeviceModel();
+
       await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tipo: 'visita',
           valor: 1,
-          date: getNowISO()
+          date: getNowISO(),
+          localizacao,
+          dispositivo
         })
       });
 
@@ -322,18 +344,21 @@
 
     if (!confirm(confirmMsg)) return;
 
-    // Voto novo
+    const localizacao = await getLocation();
+    const dispositivo = getDeviceModel();
+
     await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tipo: String(estrela),
         valor: 1,
-        date: getNowISO()
+        date: getNowISO(),
+        localizacao,
+        dispositivo
       })
     });
 
-    // Decrementa voto anterior (se existir)
     if (userRating && userRating !== estrela) {
       await fetch(API_URL, {
         method: 'POST',
@@ -341,7 +366,9 @@
         body: JSON.stringify({
           tipo: String(userRating),
           valor: -1,
-          date: getNowISO()
+          date: getNowISO(),
+          localizacao,
+          dispositivo
         })
       });
     }
