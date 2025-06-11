@@ -131,7 +131,7 @@
       }
 
       .hidden-info {
-        display: none !important;
+        display: none;
       }
 
     }
@@ -356,13 +356,13 @@
 
   async function sendVote(estrela) {
     if (userRating && userRating == estrela) {
-      alert("Você já votou com essa avaliação.");
+      alert("Já votou com essa avaliação");
       return;
     }
 
     const confirmMsg = userRating
-      ? `Você já votou com ${userRating} estrela(s). Deseja alterar para ${estrela}?`
-      : `Deseja votar com ${estrela} estrela(s)?`;
+      ? `Votou ${userRating} estrela(s). Quer alterar para ${estrela}?`
+      : `Quer votar ${estrela} estrela(s)?`;
 
     if (!confirm(confirmMsg)) return;
 
