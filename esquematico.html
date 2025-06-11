@@ -5,45 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Esquemático</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: sans-serif;
+      margin: 0;
+      background: url('fundo.jpg') no-repeat center center fixed;
+      background-size: cover;
       color: #fff;
-      background: url('circuit_background.jpg') no-repeat center center / cover;
-      height: 100vh;
-      position: relative;
-    }
-
-    /* Overlay escuro para contraste */
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      z-index: 1;
+      font-family: sans-serif;
+      overflow: hidden;
     }
 
     header {
-      position: relative;
-      z-index: 2;
       width: 100%;
-      padding: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 20px;
+      position: relative;
     }
 
     .back-button {
       position: absolute;
       left: 20px;
-      top: 20px;
       background: #515152;
       color: #fff;
       border: none;
@@ -52,7 +34,6 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background 0.3s;
-      z-index: 3;
     }
 
     .back-button:hover {
@@ -63,23 +44,37 @@
       font-size: 5vw;
       font-weight: bold;
       text-align: center;
-      text-shadow: 0 0 10px rgba(0,0,0,0.7);
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
     }
 
     .image-container {
-      display: none; /* Ocultado pois a imagem já é background */
+      max-width: 90%;
+      max-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
+    }
+
+    .image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      background: #fff;
     }
   </style>
 </head>
 <body>
-
-  <!-- Overlay escuro para contraste -->
-  <div class="overlay"></div>
-
+  
   <header>
     <button class="back-button" onclick="window.location.href='index.html'">⬅ Voltar</button>
     <h1 class="titulo">Esquemático</h1>
   </header>
+  
+  <div class="image-container">
+    <img src="esquematico.png" alt="Esquemático do Projeto PSRF" />
+  </div>
 
 </body>
 </html>
