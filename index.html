@@ -209,8 +209,7 @@
   
     return formatter.format(now).replace(' ', 'T'); // Ex: "2025-06-11T14:45:30"
   }
-
-
+  
   async function getLocation() {
     try {
       const res = await fetch('https://ipapi.co/json/');
@@ -230,13 +229,35 @@
 
   function getOS() {
     const ua = navigator.userAgent;
-    if (/Windows NT 10.0/.test(ua)) return "Windows 10";
-    if (/Mac OS X/.test(ua)) return "Mac OS X";
+  
+    // Tenta usar userAgentData se disponível (método moderno)
+    if (navigator.userAgentData?.platform === 'Windows') {
+      if (navigator.userAgentData.getHighEntropyValues) {
+        // Aqui poderias usar mais info futura, mas não está amplamente disponível ainda
+      }
+      return "Windows";
+    }
+  
+    // Detecção manual baseada no userAgent
+    if (/Windows NT 10\.0/.test(ua)) {
+      // Heurística para distinguir Windows 11
+      if (ua.includes("Win64") && !ua.includes("WOW64")) return "Windows 11";
+      return "Windows 10";
+    }
+    if (/Windows NT 6\.3/.test(ua)) return "Windows 8.1";
+    if (/Windows NT 6\.2/.test(ua)) return "Windows 8";
+    if (/Windows NT 6\.1/.test(ua)) return "Windows 7";
+    if (/Windows NT 6\.0/.test(ua)) return "Windows Vista";
+    if (/Windows NT 5\.1|Windows XP/.test(ua)) return "Windows XP";
+    if (/Mac OS X 10[._]\d+/.test(ua)) return "Mac OS X";
     if (/Android/.test(ua)) return "Android";
     if (/iPhone|iPad|iPod/.test(ua)) return "iOS";
+    if (/CrOS/.test(ua)) return "Chrome OS";
     if (/Linux/.test(ua)) return "Linux";
+  
     return "Desconhecido";
   }
+
 
   function getBrowser() {
     const ua = navigator.userAgent;
