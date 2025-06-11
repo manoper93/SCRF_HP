@@ -125,7 +125,18 @@
       .star {
         font-size: 20px;
       }
+
+      .visitor-counter > div:nth-child(2),
+      .visitor-counter > div:nth-child(3),
+      .visitor-counter > div:nth-child(4),
+      .rating-widget > div:nth-child(3),
+      .rating-widget > div:nth-child(4),
+      .rating-widget > div:nth-child(5) {
+        display: none;
+      }
+
     }
+    
   </style>
 </head>
 <body>
@@ -160,6 +171,9 @@
   <!-- Contador de visitas no canto inferior esquerdo -->
   <div class="visitor-counter">
     <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
+    <div>Visita anterior:</div>
+    <div><span id="last-visit-date">--</span></div>
+    <div><span id="last-visit-time">--</span></div>
   </div>
 
   <!-- Avaliação no canto inferior direito -->
@@ -172,6 +186,9 @@
       <span class="star" data-value="5">&#9733;</span>
     </div>
     <div class="rating-counts" id="rating-counts">Carregando...</div>
+    <div style="margin-top: 6px;">Última votação:</div>
+    <div><span id="last-vote-date">--</span></div>
+    <div><span id="last-vote-time">--</span></div>
   </div>
 
 </body>
