@@ -201,7 +201,7 @@
   <div><span id="last-vote-date">--</span></div>
   <div><span id="last-vote-time">--</span></div>
 </div>
-
+  
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
   const visitDisplay = document.getElementById('visit-count');
@@ -242,9 +242,35 @@
 
   function getDeviceModel() {
     const ua = navigator.userAgent;
-    if (/mobile/i.test(ua)) return "Telemovel";
+    if (/mobile/i.test(ua)) return "Celular";
     if (/tablet/i.test(ua)) return "Tablet";
-    return "Computador";
+    return "Desktop";
+  }
+
+  function getOS() {
+    const ua = navigator.userAgent;
+    if (/Windows NT 10.0/.test(ua)) return "Windows 10";
+    if (/Windows NT 6.3/.test(ua)) return "Windows 8.1";
+    if (/Windows NT 6.2/.test(ua)) return "Windows 8";
+    if (/Windows NT 6.1/.test(ua)) return "Windows 7";
+    if (/Windows NT 6.0/.test(ua)) return "Windows Vista";
+    if (/Windows NT 5.1/.test(ua)) return "Windows XP";
+    if (/Mac OS X/.test(ua)) return "Mac OS X";
+    if (/Android/.test(ua)) return "Android";
+    if (/iPhone|iPad|iPod/.test(ua)) return "iOS";
+    if (/Linux/.test(ua)) return "Linux";
+    return "Desconhecido";
+  }
+
+  function getBrowser() {
+    const ua = navigator.userAgent;
+    if (/Edg\//.test(ua)) return "Microsoft Edge";
+    if (/OPR\//.test(ua)) return "Opera";
+    if (/Chrome\//.test(ua)) return "Google Chrome";
+    if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
+    if (/Firefox\//.test(ua)) return "Mozilla Firefox";
+    if (/MSIE|Trident/.test(ua)) return "Internet Explorer";
+    return "Desconhecido";
   }
 
   function showLastVisit() {
@@ -311,6 +337,8 @@
 
       const localizacao = await getLocation();
       const dispositivo = getDeviceModel();
+      const os = getOS();
+      const browser = getBrowser();
 
       await fetch(API_URL, {
         method: 'POST',
@@ -320,7 +348,9 @@
           valor: 1,
           date: getNowISO(),
           localizacao,
-          dispositivo
+          dispositivo,
+          os,
+          browser
         })
       });
 
@@ -346,6 +376,8 @@
 
     const localizacao = await getLocation();
     const dispositivo = getDeviceModel();
+    const os = getOS();
+    const browser = getBrowser();
 
     await fetch(API_URL, {
       method: 'POST',
@@ -355,7 +387,9 @@
         valor: 1,
         date: getNowISO(),
         localizacao,
-        dispositivo
+        dispositivo,
+        os,
+        browser
       })
     });
 
@@ -368,7 +402,9 @@
           valor: -1,
           date: getNowISO(),
           localizacao,
-          dispositivo
+          dispositivo,
+          os,
+          browser
         })
       });
     }
@@ -397,6 +433,5 @@
 
   incrementVisit().then(loadData);
 </script>
-
 </body>
 </html>
