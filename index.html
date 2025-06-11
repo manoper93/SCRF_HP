@@ -187,25 +187,16 @@
 </body>
 </html>
 
-  
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
-
   const visitDisplay = document.getElementById('visit-count');
   const ratingDisplay = document.getElementById('rating-counts');
   const stars = document.querySelectorAll('.star');
   let userRating = localStorage.getItem('userRating');
 
-  function getNowISO() {
-    return new Date().toISOString().replace('T', ' ').substring(0, 19);
-  }
-
-  function getDateTimeSeparated() {
+  function getNowLocalISO() {
     const now = new Date();
-    return {
-      date: now.toLocaleDateString(),
-      time: now.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    };
+    return now.toLocaleString('sv-SE'); // Formato YYYY-MM-DD HH:mm:ss com hora local (verão/inverno)
   }
 
   async function getLocation() {
@@ -228,12 +219,9 @@
   function getOS() {
     const ua = navigator.userAgent;
     if (/Windows NT 10.0/.test(ua)) return "Windows 10";
-    if (/Windows NT 6.3/.test(ua)) return "Windows 8.1";
-    if (/Windows NT 6.2/.test(ua)) return "Windows 8";
-    if (/Windows NT 6.1/.test(ua)) return "Windows 7";
     if (/Mac OS X/.test(ua)) return "Mac OS X";
     if (/Android/.test(ua)) return "Android";
-    if (/iPhone|iPad/.test(ua)) return "iOS";
+    if (/iPhone|iPad|iPod/.test(ua)) return "iOS";
     if (/Linux/.test(ua)) return "Linux";
     return "Desconhecido";
   }
@@ -249,46 +237,29 @@
   }
 
   async function loadData() {
-    try {
-      const res = await fetch(API_URL);
-      const data = await res.json();
-      console.log("Dados recebidos:", data);
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-      const totalVisitas = data
-        .filter(row => row.tipo?.toLowerCase().trim() === 'visita')
-        .reduce((acc, row) => acc + (parseInt(row.valor) || 0), 0);
+    const totalVisitas = data
+      .filter(row => row.tipo === 'visita')
+      .reduce((acc, row) => acc + parseInt(row.valor || 0), 0);
+    visitDisplay.textContent = totalVisitas;
 
-      visitDisplay.textContent = totalVisitas;
+    const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    data.forEach(row => {
+      const num = parseInt(row.tipo);
+      if (!isNaN(num)) votos[num] += parseInt(row.valor || 0);
+    });
 
-      const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      data.forEach(row => {
-        const tipo = row.tipo?.trim();
-        const valor = parseInt(row.valor);
-        const num = parseInt(tipo);
-
-        if (!isNaN(num) && votos.hasOwnProperty(num)) {
-          votos[num] += (isNaN(valor) ? 0 : valor);
-        }
-      });
-
-      let output = '';
-      for (let i = 5; i >= 1; i--) {
-        output += `<div>${i} estrela(s): ${votos[i]}</div>`;
-      }
-      ratingDisplay.innerHTML = output;
-
-      showGlobalLastVote(data);
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error);
-      visitDisplay.textContent = "Erro";
-      ratingDisplay.innerHTML = "Erro ao carregar avaliações.";
+    let output = '';
+    for (let i = 5; i >= 1; i--) {
+      output += `<div>${i} estrela(s): ${votos[i] || 0}</div>`;
     }
+    ratingDisplay.innerHTML = output;
   }
 
   async function incrementVisit() {
     if (!sessionStorage.getItem('visited')) {
-      showLastVisit();
-
       const localizacao = await getLocation();
       const dispositivo = getDeviceModel();
       const os = getOS();
@@ -300,7 +271,7 @@
         body: JSON.stringify({
           tipo: 'visita',
           valor: 1,
-          date: getNowISO(),
+          date: getNowLocalISO(),
           localizacao,
           dispositivo,
           os,
@@ -308,17 +279,13 @@
         })
       });
 
-      const { date, time } = getDateTimeSeparated();
-      localStorage.setItem('lastVisitTime', `${date}, ${time}`);
       sessionStorage.setItem('visited', 'true');
-    } else {
-      showLastVisit();
     }
   }
 
   async function sendVote(estrela) {
     if (userRating && userRating == estrela) {
-      alert("Já votou com essa avaliação.");
+      alert("Já votou com essa avaliação");
       return;
     }
 
@@ -339,7 +306,7 @@
       body: JSON.stringify({
         tipo: String(estrela),
         valor: 1,
-        date: getNowISO(),
+        date: getNowLocalISO(),
         localizacao,
         dispositivo,
         os,
@@ -354,7 +321,7 @@
         body: JSON.stringify({
           tipo: String(userRating),
           valor: -1,
-          date: getNowISO(),
+          date: getNowLocalISO(),
           localizacao,
           dispositivo,
           os,
@@ -384,7 +351,9 @@
   });
 
   if (userRating) updateStars(parseInt(userRating));
+
   incrementVisit().then(loadData);
 </script>
+
 </body>
 </html>
