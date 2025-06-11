@@ -8,7 +8,7 @@
     body {
       margin: 0;
       padding: 0;
-      background-image: url('circuit_background.jpg'); /* Altere se necessário */
+      background-image: url('circuit_background.jpg'); /* Certifique-se de que esta imagem esteja no mesmo diretório */
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center center;
@@ -17,23 +17,29 @@
       color: white;
     }
 
-    .top-right-logos {
-      position: fixed;
-      top: 10px;
-      right: 10px;
+    /* Header com logos */
+    .logo-header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 20px 0 20px;
+    }
+
+    .logo-container {
       display: flex;
       gap: 10px;
-      z-index: 1000;
+      background-color: rgba(128, 128, 128, 0.7); /* fundo cinza com transparência */
+      padding: 6px 10px;
+      border-radius: 10px;
     }
 
     .logo {
       max-height: 40px;
-      opacity: 0.9;
+      opacity: 0.95;
     }
 
     h1, h2 {
       text-align: center;
-      margin-top: 80px;
+      margin-top: 10px;
       text-shadow: 1px 1px 3px #000;
     }
 
@@ -111,16 +117,18 @@
 </head>
 <body>
 
-  <!-- Logos no canto superior direito -->
-  <div class="top-right-logos">
-    <img src="logo_st.png" alt="Logo ST" class="logo" />
-    <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
-    <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
-  </div>
+  <!-- Cabeçalho com logos no canto direito e fundo cinza -->
+  <header class="logo-header">
+    <div class="logo-container">
+      <img src="logo_st.png" alt="Logo ST" class="logo" />
+      <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
+      <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
+    </div>
+  </header>
 
-  <!-- Títulos principais -->
+  <!-- Títulos logo abaixo dos logos -->
   <h1>Sistema de Controlo Rádio Frequência</h1>
-  <h2>Visualizar Módulo em 3D</h2>
+  <h2>Visualizar Módulos em 3D</h2>
 
   <!-- Botões para módulos -->
   <div class="buttons">
@@ -128,7 +136,7 @@
     <a href="porta.html"><button class="btn">🚪 Módulo Porta</button></a> 
   </div>
 
-  <h2>Visualizar Esquemático</h2>
+  <h2>Visualizar o Esquemático</h2>
 
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
@@ -159,6 +167,7 @@
 
 </body>
 </html>
+
   
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
