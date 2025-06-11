@@ -8,13 +8,25 @@
     body {
       margin: 0;
       padding: 0;
-      background-image: url('circuit_background.jpg'); /* Certifique-se de que esta imagem esteja no mesmo diretório */
+      background-image: url('circuit_background.jpg');
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center center;
       background-attachment: fixed;
       font-family: Arial, sans-serif;
       color: white;
+    
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    
+    .main-content {
+      max-width: 800px;
+      width: 100%;
     }
 
 
@@ -126,7 +138,8 @@
       <img src="logo_isep.png" alt="Logo ISEP" class="logo" />
     </div>
   </header>
-
+  
+<div class="main-content">
   <!-- Títulos logo abaixo dos logos -->
   <h1>Sistema de Controlo Rádio Frequência</h1>
   <h2>Visualizar Módulos em 3D</h2>
@@ -142,7 +155,7 @@
   <div class="buttons">
     <a href="esquematico.html"><button class="btn">📐 Esquemático</button></a>
   </div>
-
+</div>
   <!-- Contador de visitas no canto inferior esquerdo -->
   <div class="visitor-counter">
     <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
