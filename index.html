@@ -182,15 +182,25 @@
       <span class="star" data-value="5">&#9733;</span>
     </div>
       <div class="rating-counts" id="rating-counts">Carregando...</div>
+
   </div>
 
 </body>
+  
+<div id="last-visit-date"></div>
+<div id="last-visit-time"></div>
+<div id="last-vote-date"></div>
+<div id="last-vote-time"></div>
+  
 </html>
 
   
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
   const visitDisplay = document.getElementById('visit-count');
+  const lastVisitTime = document.getElementById('last-visit-time');
+  const lastVoteDate = document.getElementById('last-vote-date');
+  const lastVoteTime = document.getElementById('last-vote-time');
   const ratingDisplay = document.getElementById('rating-counts');
   const stars = document.querySelectorAll('.star');
   let userRating = localStorage.getItem('userRating');
