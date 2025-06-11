@@ -12,16 +12,19 @@
       font-family: sans-serif;
       overflow: hidden;
     }
-    
+
     header {
       width: 100%;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      padding: 10px 20px;
+      padding: 20px;
+      position: relative;
     }
 
     .back-button {
+      position: absolute;
+      left: 20px;
       background: #515152;
       color: #fff;
       border: none;
@@ -36,16 +39,10 @@
       background: #949494;
     }
 
-    titulo {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #ffffff;
+    .titulo {
       font-size: 5vw;
-      font-weight: 600;
-      z-index: 20;
-      pointer-events: none;
+      font-weight: bold;
+      text-align: center;
       text-shadow: 0 0 8px rgba(0,0,0,0.6);
     }
 
@@ -55,6 +52,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      margin: auto;
     }
 
     .image-container img {
@@ -68,11 +66,9 @@
 </head>
 <body>
   
-  <!-- Título da página -->
-  <h1 class="titulo">Esquemático</h1>
-
   <header>
     <button class="back-button" onclick="window.location.href='index.html'">⬅ Voltar</button>
+    <h1 class="titulo">Esquemático</h1>
   </header>
   
   <div class="image-container">
