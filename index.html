@@ -230,14 +230,6 @@
   function getOS() {
     const ua = navigator.userAgent;
   
-    // Tenta usar userAgentData se disponível (método moderno)
-    if (navigator.userAgentData?.platform === 'Windows') {
-      if (navigator.userAgentData.getHighEntropyValues) {
-        // Aqui poderias usar mais info futura, mas não está amplamente disponível ainda
-      }
-      return "Windows";
-    }
-  
     // Detecção manual baseada no userAgent
     if (/Windows NT 10\.0/.test(ua)) {
       // Heurística para distinguir Windows 11
