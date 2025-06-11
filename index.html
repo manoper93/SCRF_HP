@@ -170,9 +170,6 @@
   <!-- Contador de visitas no canto inferior esquerdo -->
 <div class="visitor-counter">
   <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
-  <div>Visita anterior:</div>
-  <div><span id="last-visit-date">--</span></div>
-  <div><span id="last-visit-time">--</span></div>
 </div>
 
   <!-- Avaliação no canto inferior direito -->
@@ -185,9 +182,6 @@
       <span class="star" data-value="5">&#9733;</span>
     </div>
       <div class="rating-counts" id="rating-counts">Carregando...</div>
-      <div style="margin-top: 6px;">Última votação:</div>
-      <div><span id="last-vote-date">--</span></div>
-      <div><span id="last-vote-time">--</span></div>
   </div>
 
 </body>
@@ -198,10 +192,6 @@
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
 
   const visitDisplay = document.getElementById('visit-count');
-  const lastVisitDate = document.getElementById('last-visit-date');
-  const lastVisitTime = document.getElementById('last-visit-time');
-  const lastVoteDate = document.getElementById('last-vote-date');
-  const lastVoteTime = document.getElementById('last-vote-time');
   const ratingDisplay = document.getElementById('rating-counts');
   const stars = document.querySelectorAll('.star');
   let userRating = localStorage.getItem('userRating');
@@ -256,29 +246,6 @@
     if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
     if (/Firefox\//.test(ua)) return "Mozilla Firefox";
     return "Desconhecido";
-  }
-
-  function showLastVisit() {
-    const value = localStorage.getItem('lastVisitTime');
-    if (value) {
-      const [date, time] = value.split(', ');
-      lastVisitDate.textContent = date || '--';
-      lastVisitTime.textContent = time || '--';
-    }
-  }
-
-  function showGlobalLastVote(data) {
-    const voteLines = data
-      .filter(row => ['1', '2', '3', '4', '5'].includes(row.tipo?.trim()) && parseInt(row.valor) > 0 && row.date)
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    if (voteLines.length > 0) {
-      const latest = new Date(voteLines[0].date);
-      lastVoteDate.textContent = latest.toLocaleDateString();
-      lastVoteTime.textContent = latest.toLocaleTimeString([], {
-        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-      });
-    }
   }
 
   async function loadData() {
