@@ -16,15 +16,15 @@
     header {
       width: 100%;
       display: flex;
-      align-items: center;       /* Alinha verticalmente título e botão */
+      align-items: center;
       padding: 20px;
       box-sizing: border-box;
-      justify-content: center;   /* Centraliza conteúdo horizontalmente */
-      position: relative;        /* Para posicionar o botão com position absolute */
+      position: relative;
+      justify-content: center;
     }
-    
+
     .back-button {
-      position: absolute;        /* Faz o botão ficar fixo à esquerda */
+      position: absolute;
       left: 20px;
       background: #515152;
       color: #fff;
@@ -35,26 +35,25 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-    
+
     .back-button:hover {
       background: #949494;
     }
-    
+
     .titulo {
       font-size: 5vw;
       font-weight: bold;
       text-align: center;
       text-shadow: 0 0 8px rgba(0,0,0,0.6);
       margin: 0;
-      flex-grow: 1; /* Faz o título ocupar o espaço restante */
+      flex-grow: 1;
     }
-    
+
     @media (min-width: 600px) {
       .titulo {
         font-size: 2rem;
       }
     }
-
 
     .image-container {
       max-width: 90%;
