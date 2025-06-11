@@ -171,7 +171,7 @@
 <div class="visitor-counter">
   <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
   <div>Visita anterior:</div>
-  <div><span id="last-visit-date">--</span></div>Add commentMore actions
+  <div><span id="last-visit-date">--</span></div>
   <div><span id="last-visit-time">--</span></div>
 </div>
 
@@ -196,7 +196,9 @@
   
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
+
   const visitDisplay = document.getElementById('visit-count');
+  const lastVisitDate = document.getElementById('last-visit-date');
   const lastVisitTime = document.getElementById('last-visit-time');
   const lastVoteDate = document.getElementById('last-vote-date');
   const lastVoteTime = document.getElementById('last-vote-time');
@@ -212,12 +214,7 @@
     const now = new Date();
     return {
       date: now.toLocaleDateString(),
-      time: now.toLocaleTimeString([], {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
+      time: now.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
     };
   }
 
@@ -233,7 +230,7 @@
 
   function getDeviceModel() {
     const ua = navigator.userAgent;
-    if (/mobile/i.test(ua)) return "Telemovel";
+    if (/mobile/i.test(ua)) return "Telemóvel";
     if (/tablet/i.test(ua)) return "Tablet";
     return "Computador";
   }
@@ -244,11 +241,9 @@
     if (/Windows NT 6.3/.test(ua)) return "Windows 8.1";
     if (/Windows NT 6.2/.test(ua)) return "Windows 8";
     if (/Windows NT 6.1/.test(ua)) return "Windows 7";
-    if (/Windows NT 6.0/.test(ua)) return "Windows Vista";
-    if (/Windows NT 5.1/.test(ua)) return "Windows XP";
     if (/Mac OS X/.test(ua)) return "Mac OS X";
     if (/Android/.test(ua)) return "Android";
-    if (/iPhone|iPad|iPod/.test(ua)) return "iOS";
+    if (/iPhone|iPad/.test(ua)) return "iOS";
     if (/Linux/.test(ua)) return "Linux";
     return "Desconhecido";
   }
@@ -260,7 +255,6 @@
     if (/Chrome\//.test(ua)) return "Google Chrome";
     if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
     if (/Firefox\//.test(ua)) return "Mozilla Firefox";
-    if (/MSIE|Trident/.test(ua)) return "Internet Explorer";
     return "Desconhecido";
   }
 
@@ -270,56 +264,58 @@
       const [date, time] = value.split(', ');
       lastVisitDate.textContent = date || '--';
       lastVisitTime.textContent = time || '--';
-    } else {
-      lastVisitDate.textContent = '--';
-      lastVisitTime.textContent = '--';
     }
   }
 
   function showGlobalLastVote(data) {
     const voteLines = data
-      .filter(row => ['1', '2', '3', '4', '5'].includes(row.tipo) && parseInt(row.valor) > 0 && row.date)
+      .filter(row => ['1', '2', '3', '4', '5'].includes(row.tipo?.trim()) && parseInt(row.valor) > 0 && row.date)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
 
     if (voteLines.length > 0) {
       const latest = new Date(voteLines[0].date);
-      const date = latest.toLocaleDateString();
-      const time = latest.toLocaleTimeString([], {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+      lastVoteDate.textContent = latest.toLocaleDateString();
+      lastVoteTime.textContent = latest.toLocaleTimeString([], {
+        hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
       });
-      lastVoteDate.textContent = date;
-      lastVoteTime.textContent = time;
-    } else {
-      lastVoteDate.textContent = '--';
-      lastVoteTime.textContent = '--';
     }
   }
 
   async function loadData() {
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      console.log("Dados recebidos:", data);
 
-    const totalVisitas = data
-      .filter(row => row.tipo === 'visita')
-      .reduce((acc, row) => acc + parseInt(row.valor || 0), 0);
-    visitDisplay.textContent = totalVisitas;
+      const totalVisitas = data
+        .filter(row => row.tipo?.toLowerCase().trim() === 'visita')
+        .reduce((acc, row) => acc + (parseInt(row.valor) || 0), 0);
 
-    const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    data.forEach(row => {
-      const num = parseInt(row.tipo);
-      if (!isNaN(num)) votos[num] += parseInt(row.valor || 0);
-    });
+      visitDisplay.textContent = totalVisitas;
 
-    let output = '';
-    for (let i = 5; i >= 1; i--) {
-      output += `<div>${i} estrela(s): ${votos[i] || 0}</div>`;
+      const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      data.forEach(row => {
+        const tipo = row.tipo?.trim();
+        const valor = parseInt(row.valor);
+        const num = parseInt(tipo);
+
+        if (!isNaN(num) && votos.hasOwnProperty(num)) {
+          votos[num] += (isNaN(valor) ? 0 : valor);
+        }
+      });
+
+      let output = '';
+      for (let i = 5; i >= 1; i--) {
+        output += `<div>${i} estrela(s): ${votos[i]}</div>`;
+      }
+      ratingDisplay.innerHTML = output;
+
+      showGlobalLastVote(data);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      visitDisplay.textContent = "Erro";
+      ratingDisplay.innerHTML = "Erro ao carregar avaliações.";
     }
-    ratingDisplay.innerHTML = output;
-
-    showGlobalLastVote(data);
   }
 
   async function incrementVisit() {
@@ -355,7 +351,7 @@
 
   async function sendVote(estrela) {
     if (userRating && userRating == estrela) {
-      alert("Já votou com essa avaliação");
+      alert("Já votou com essa avaliação.");
       return;
     }
 
@@ -421,7 +417,6 @@
   });
 
   if (userRating) updateStars(parseInt(userRating));
-
   incrementVisit().then(loadData);
 </script>
 </body>
