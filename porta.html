@@ -17,12 +17,18 @@
     header {
       width: 100%;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
-      padding: 10px 20px;
+      padding: 20px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 100;
     }
 
     .back-button {
+      position: absolute;
+      left: 20px;
       background: #515152;
       color: #fff;
       border: none;
@@ -35,6 +41,20 @@
 
     .back-button:hover {
       background: #949494;
+    }
+
+    .titulo {
+      font-size: 5vw;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
+      margin: 0;
+    }
+
+    @media (min-width: 600px) {
+      .titulo {
+        font-size: 2rem;
+      }
     }
 
     model-viewer {
@@ -53,7 +73,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+      z-index: 200;
     }
 
     .spinner {
@@ -68,25 +88,6 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-
-    .titulo {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #ffffff;
-      font-size: 5vw;
-      font-weight: 600;
-      z-index: 20;
-      pointer-events: none;
-      text-shadow: 0 0 8px rgba(0,0,0,0.6);
-    }
-
-    @media (min-width: 600px) {
-      .titulo {
-        font-size: 2rem;
-      }
-    }
   </style>
 </head>
 <body>
@@ -96,11 +97,10 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Título da página -->
-  <h1 class="titulo">Módulo Porta 3D</h1>
-
+  <!-- Header com botão e título -->
   <header>
     <button class="back-button" onclick="window.location.href='index.html'">⬅ Voltar</button>
+    <h1 class="titulo">Módulo Porta 3D</h1>
   </header>
   
   <!-- Visualizador 3D -->
