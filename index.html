@@ -122,6 +122,33 @@
       font-size: 11px;
     }
 
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('circuit_background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    .spinner {
+      border: 6px solid #333;
+      border-top: 6px solid #FFD700;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     @media (max-width: 600px) {
       .logo {
         max-height: 30px;
@@ -145,6 +172,11 @@
   </style>
 </head>
 <body>
+  <!-- Tela de carregamento -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+  </div>
+  
 <div class="wrapper">
   <!-- Cabeçalho com logos no canto direito e fundo cinza -->
   <header class="logo-header">
