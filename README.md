@@ -2,4 +2,4 @@
 
 SITE --> [Sistema de Controlo Rádio Frequência](https://manoper93.github.io/SCRF_HP/)
 
-![Screenshot_20250527_084924_Chrome](https://github.com/user-attachments/assets/437567b8-bc0a-42c3-a098-bf1dac01ee5a)
+![qrcode](https://github.com/user-attachments/assets/0a5f6399-ba1f-4ca2-898b-0d47ab6e2a62)
