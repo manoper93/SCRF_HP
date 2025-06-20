@@ -82,7 +82,7 @@
 <body>
 
   <header>
-    <button class="back-button" id="back-button">⬅ Voltar</button>
+    <button class="back-button" id="back-button" onclick="window.location.href='index.html'">⬅ Back</button>
     <h1 class="titulo" id="page-title">Gerber</h1>
   </header>
 
@@ -91,16 +91,14 @@
   </div>
 
   <script>
-    // Ler idioma do localStorage (default EN)
     const lang = localStorage.getItem('lang') || 'en';
 
-    // Aplica traduções
+    document.documentElement.lang = lang;
+
     if (lang === 'pt-PT') {
-      document.documentElement.lang = 'pt-PT';
       document.getElementById('back-button').textContent = '⬅ Voltar';
       document.getElementById('page-title').textContent = 'Gerber';
     } else {
-      document.documentElement.lang = 'en';
       document.getElementById('back-button').textContent = '⬅ Back';
       document.getElementById('page-title').textContent = 'Gerber';
     }
