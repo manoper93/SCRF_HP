@@ -198,7 +198,7 @@
 
 <!-- Contador -->
 <div class="visitor-counter">
-  <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
+  <div id="visit-label">Visitas públicas: <span id="visit-count">A carregar...</span></div>
 </div>
 
 <!-- Avaliação -->
@@ -210,7 +210,7 @@
     <span class="star" data-value="4">&#9733;</span>
     <span class="star" data-value="5">&#9733;</span>
   </div>
-  <div class="rating-counts" id="rating-counts">Carregando...</div>
+  <div class="rating-counts" id="rating-counts">A carregar...</div>
 </div>
 
 <!-- Script de idioma -->
@@ -247,6 +247,7 @@
     document.documentElement.lang = lang;
     localStorage.setItem('lang', lang);
     applyLangTexts(lang);
+    loadData();
   }
 </script>
   
@@ -325,6 +326,9 @@
       .filter(row => row.tipo === 'visita')
       .reduce((acc, row) => acc + parseInt(row.valor || 0), 0);
     visitDisplay.textContent = totalVisitas;
+    document.getElementById('visit-label').firstChild.textContent = 
+  lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
+
 
     const votos = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     data.forEach(row => {
