@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Controlo Rádio Frequência</title>
+  <title id="page-title">Sistema de Controlo Rádio Frequência</title>
   <link rel="icon" href="logo_0.png" type="image/png" />
   <style>
     body {
@@ -163,7 +163,18 @@
   <script>
   const savedLang = localStorage.getItem('lang') || 'en';
   document.documentElement.lang = savedLang;
+
+  function applyLangTexts(lang) {
+    document.title = lang === 'pt-PT'
+      ? 'Sistema de Controlo Rádio Frequência'
+      : 'Radio Frequency Control System';
+
+    // ... atualiza outros textos na página
+  }
+
+  applyLangTexts(savedLang);
 </script>
+
 
 
 <div class="wrapper">
@@ -245,6 +256,10 @@
       document.getElementById('gerber-btn').textContent = '📐 Gerber';
     }
   }
+  document.title = lang === 'pt-PT'
+  ? 'Sistema de Controlo Rádio Frequência'
+  : 'Radio Frequency Control System';
+
 
   // Aplica ao iniciar
   applyLangTexts(savedLang);
