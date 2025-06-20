@@ -160,14 +160,14 @@
 <body>
 
 <div class="wrapper">
-  <!-- Botão de idioma no canto superior esquerdo -->
+  <!-- Botão de idioma -->
   <div class="lang-switch">
     <button onclick="toggleLang()">EN / PT</button>
   </div>
 
-  <!-- Cabeçalho com logos no canto direito -->
+  <!-- Cabeçalho com logos -->
   <header class="logo-header">
-    <div></div> <!-- espaço reservado para alinhar à esquerda -->
+    <div></div>
     <div class="logo-container">
       <img src="logo_st.png" alt="Logo ST" class="logo" />
       <img src="logo_tedayc.png" alt="Logo TEDAYC" class="logo" />
@@ -196,11 +196,12 @@
   </div>
 </div>
 
-<!-- Contador e rating mantêm-se -->
+<!-- Contador -->
 <div class="visitor-counter">
   <div>Visitas públicas: <span id="visit-count">Carregando...</span></div>
 </div>
 
+<!-- Avaliação -->
 <div class="rating-widget">
   <div id="stars">
     <span class="star" data-value="1">&#9733;</span>
@@ -212,11 +213,13 @@
   <div class="rating-counts" id="rating-counts">Carregando...</div>
 </div>
 
+<!-- Script de idioma -->
 <script>
-  function toggleLang() {
-    const lang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
-    document.documentElement.lang = lang;
+  // Aplica idioma guardado no localStorage
+  const savedLang = localStorage.getItem('lang') || 'en';
+  document.documentElement.lang = savedLang;
 
+  function applyLangTexts(lang) {
     if (lang === 'pt-PT') {
       document.getElementById('main-title').textContent = 'Sistema de Controlo Rádio Frequência';
       document.getElementById('subtitle1').textContent = 'Visualizar Módulos em 3D';
@@ -234,7 +237,16 @@
       document.getElementById('schematic-btn').textContent = '📐 Schematic';
       document.getElementById('gerber-btn').textContent = '📐 Gerber';
     }
+  }
+
+  // Aplica ao iniciar
+  applyLangTexts(savedLang);
+
+  function toggleLang() {
+    const lang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
+    document.documentElement.lang = lang;
     localStorage.setItem('lang', lang);
+    applyLangTexts(lang);
   }
 </script>
 
