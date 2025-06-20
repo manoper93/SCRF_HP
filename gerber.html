@@ -77,39 +77,13 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
       background: #fff;
     }
-
-    .lang-switch {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-      background-color: rgba(223, 226, 231, 0.7);
-      padding: 6px 10px;
-      border-radius: 10px;
-    }
-
-    .lang-switch button {
-      background: none;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
 
   <header>
-    <!-- Botão de idioma -->
-    <div class="lang-switch">
-      <button onclick="toggleLang()">EN / PT</button>
-    </div>
-
-    <!-- Botão voltar -->
-    <button class="back-button" id="back-btn" onclick="window.location.href='index.html'">⬅ Back</button>
-
-    <!-- Título -->
-    <h1 class="titulo" id="title">Gerber</h1>
+    <button class="back-button" id="back-button">⬅ Voltar</button>
+    <h1 class="titulo" id="page-title">Gerber</h1>
   </header>
 
   <div class="image-container">
@@ -117,17 +91,18 @@
   </div>
 
   <script>
-    function toggleLang() {
-      const lang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
-      document.documentElement.lang = lang;
+    // Ler idioma do localStorage (default EN)
+    const lang = localStorage.getItem('lang') || 'en';
 
-      if (lang === 'pt-PT') {
-        document.getElementById('title').textContent = 'Gerber';
-        document.getElementById('back-btn').textContent = '⬅ Voltar';
-      } else {
-        document.getElementById('title').textContent = 'Gerber';
-        document.getElementById('back-btn').textContent = '⬅ Back';
-      }
+    // Aplica traduções
+    if (lang === 'pt-PT') {
+      document.documentElement.lang = 'pt-PT';
+      document.getElementById('back-button').textContent = '⬅ Voltar';
+      document.getElementById('page-title').textContent = 'Gerber';
+    } else {
+      document.documentElement.lang = 'en';
+      document.getElementById('back-button').textContent = '⬅ Back';
+      document.getElementById('page-title').textContent = 'Gerber';
     }
   </script>
 
