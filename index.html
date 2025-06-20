@@ -157,7 +157,14 @@
     }
   </style>
 </head>
+  
 <body>
+  
+  <script>
+  const savedLang = localStorage.getItem('lang') || 'en';
+  document.documentElement.lang = savedLang;
+</script>
+
 
 <div class="wrapper">
   <!-- Botão de idioma -->
@@ -243,12 +250,12 @@
   applyLangTexts(savedLang);
 
   function toggleLang() {
-    const lang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
-    document.documentElement.lang = lang;
-    localStorage.setItem('lang', lang);
-    applyLangTexts(lang);
-    loadData();
+    const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
+    localStorage.setItem('lang', newLang);
+    // força reload para aplicar novo idioma
+    location.reload();
   }
+
 </script>
   
 <script>
