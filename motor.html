@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Módulo Motor 3D</title>
+  <title>Motor Module 3D</title>
   <link rel="icon" href="logo_0.png" type="image/png" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
@@ -103,13 +103,13 @@
 
   <!-- Header com botão e título -->
   <header>
-    <button class="back-button" onclick="window.location.href='index.html'">⬅ Voltar</button>
-    <h1 class="titulo">Módulo Motor 3D</h1>
+    <button class="back-button" id="back-button">⬅ Back</button>
+    <h1 class="titulo" id="page-title">Motor Module 3D</h1>
   </header>
   
   <!-- Visualizador 3D -->
   <model-viewer src="SCRF_HP_Módulo_Motor.glb"
-    alt="Módulo Motor"
+    alt="Motor Module"
     camera-controls
     shadow-intensity="0.8"
     exposure="0.9"
@@ -117,6 +117,26 @@
     ar
     onload="document.getElementById('loading').style.display='none';">
   </model-viewer>
+
+  <!-- Script de idioma -->
+  <script>
+    const lang = localStorage.getItem('lang') || 'en';
+    document.documentElement.lang = lang;
+
+    if (lang === 'pt-PT') {
+      document.title = 'Módulo Motor 3D';
+      document.getElementById('back-button').textContent = '⬅ Voltar';
+      document.getElementById('page-title').textContent = 'Módulo Motor 3D';
+    } else {
+      document.title = 'Motor Module 3D';
+      document.getElementById('back-button').textContent = '⬅ Back';
+      document.getElementById('page-title').textContent = 'Motor Module 3D';
+    }
+
+    document.getElementById('back-button').onclick = () => {
+      window.location.href = 'index.html';
+    };
+  </script>
 
 </body>
 </html>
