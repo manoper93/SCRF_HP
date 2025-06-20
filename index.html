@@ -159,23 +159,6 @@
 </head>
   
 <body>
-  
-  <script>
-  const savedLang = localStorage.getItem('lang') || 'en';
-  document.documentElement.lang = savedLang;
-
-  function applyLangTexts(lang) {
-    document.title = lang === 'pt-PT'
-      ? 'Sistema de Controlo Rádio Frequência'
-      : 'Radio Frequency Control System';
-
-    // ... atualiza outros textos na página
-  }
-
-  applyLangTexts(savedLang);
-</script>
-
-
 
 <div class="wrapper">
   <!-- Botão de idioma -->
@@ -239,6 +222,7 @@
 
   function applyLangTexts(lang) {
     if (lang === 'pt-PT') {
+      document.getElementById('page-title').textContent = 'Sistema de Controlo Rádio Frequência';
       document.getElementById('main-title').textContent = 'Sistema de Controlo Rádio Frequência';
       document.getElementById('subtitle1').textContent = 'Visualizar Módulos em 3D';
       document.getElementById('motor-btn').textContent = '⚙️ Módulo Motor';
@@ -247,6 +231,7 @@
       document.getElementById('schematic-btn').textContent = '📐 Esquemático';
       document.getElementById('gerber-btn').textContent = '📐 Gerber';
     } else {
+      document.getElementById('page-title').textContent = 'Radio Frequency Control System';
       document.getElementById('main-title').textContent = 'Radio Frequency Control System';
       document.getElementById('subtitle1').textContent = 'View Modules in 3D';
       document.getElementById('motor-btn').textContent = '⚙️ Motor Module';
@@ -256,10 +241,6 @@
       document.getElementById('gerber-btn').textContent = '📐 Gerber';
     }
   }
-  document.title = lang === 'pt-PT'
-  ? 'Sistema de Controlo Rádio Frequência'
-  : 'Radio Frequency Control System';
-
 
   // Aplica ao iniciar
   applyLangTexts(savedLang);
