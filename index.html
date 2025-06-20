@@ -249,13 +249,14 @@
     applyLangTexts(lang);
   }
 </script>
-
+  
 <script>
   const API_URL = 'https://api.sheetbest.com/sheets/dd56be8f-5acf-48af-a6f7-6c1a0ffa370b';
   const visitDisplay = document.getElementById('visit-count');
   const ratingDisplay = document.getElementById('rating-counts');
   const stars = document.querySelectorAll('.star');
   let userRating = localStorage.getItem('userRating');
+  const lang = localStorage.getItem('lang') || 'en';
 
   function getNowLocalISO() {
     const now = new Date();
@@ -269,17 +270,16 @@
       minute: '2-digit',
       second: '2-digit'
     });
-  
-    return formatter.format(now).replace(' ', 'T'); // Ex: "2025-06-11T14:45:30"
+    return formatter.format(now).replace(' ', 'T');
   }
-  
+
   async function getLocation() {
     try {
       const res = await fetch('https://ipapi.co/json/');
       const data = await res.json();
       return `${data.city}, ${data.region}, ${data.country_name}`;
     } catch (e) {
-      return 'Localização desconhecida';
+      return lang === 'pt-PT' ? 'Localização desconhecida' : 'Unknown location';
     }
   }
 
@@ -292,21 +292,8 @@
 
   function getOS() {
     const ua = navigator.userAgent;
-    
-      // Tenta usar userAgentData se disponível (método moderno)
-    if (navigator.userAgentData?.platform === 'Windows') {
-      if (navigator.userAgentData.getHighEntropyValues) {
-        // Aqui poderias usar mais info futura, mas não está amplamente disponível ainda
-      }
-      return "Windows";
-    }
-    
-    // Detecção manual baseada no userAgent
-    if (/Windows NT 10\.0/.test(ua)) {
-      // Heurística para distinguir Windows 11
-      if (ua.includes("Win64") && !ua.includes("WOW64")) return "Windows 11";
-      return "Windows 10";
-    }
+    if (navigator.userAgentData?.platform === 'Windows') return "Windows";
+    if (/Windows NT 10\.0/.test(ua)) return "Windows 10";
     if (/Windows NT 6\.3/.test(ua)) return "Windows 8.1";
     if (/Windows NT 6\.2/.test(ua)) return "Windows 8";
     if (/Windows NT 6\.1/.test(ua)) return "Windows 7";
@@ -317,10 +304,8 @@
     if (/iPhone|iPad|iPod/.test(ua)) return "iOS";
     if (/CrOS/.test(ua)) return "Chrome OS";
     if (/Linux/.test(ua)) return "Linux";
-  
     return "Desconhecido";
   }
-
 
   function getBrowser() {
     const ua = navigator.userAgent;
@@ -349,7 +334,8 @@
 
     let output = '';
     for (let i = 5; i >= 1; i--) {
-      output += `<div>${i} estrela(s): ${votos[i] || 0}</div>`;
+      const label = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
+      output += `<div>${label}: ${votos[i] || 0}</div>`;
     }
     ratingDisplay.innerHTML = output;
   }
@@ -380,14 +366,22 @@
   }
 
   async function sendVote(estrela) {
+    const msgAlreadyVoted = lang === 'pt-PT'
+      ? "Já votou com essa avaliação"
+      : "You have already voted with this rating";
+
     if (userRating && userRating == estrela) {
-      alert("Já votou com essa avaliação");
+      alert(msgAlreadyVoted);
       return;
     }
 
     const confirmMsg = userRating
-      ? `Votou ${userRating} estrela(s). Quer alterar para ${estrela}?`
-      : `Quer votar ${estrela} estrela(s)?`;
+      ? (lang === 'pt-PT'
+        ? `Votou ${userRating} estrela(s). Quer alterar para ${estrela}?`
+        : `You voted ${userRating} star(s). Change to ${estrela}?`)
+      : (lang === 'pt-PT'
+        ? `Quer votar ${estrela} estrela(s)?`
+        : `Do you want to vote ${estrela} star(s)?`);
 
     if (!confirm(confirmMsg)) return;
 
