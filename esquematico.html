@@ -83,7 +83,7 @@
 
   <header>
     <button class="back-button" id="back-button">⬅ Back</button>
-    <h1 class="titulo" id="page-title">Schematic</h1>
+    <h1 class="titulo" id="main-title">Schematic</h1>
   </header>
 
   <div class="image-container">
@@ -97,9 +97,11 @@
     if (lang === 'pt-PT') {
       document.getElementById('back-button').textContent = '⬅ Voltar';
       document.getElementById('page-title').textContent = 'Esquemático';
+      document.getElementById('main-title').textContent = 'Esquemático';
     } else {
       document.getElementById('back-button').textContent = '⬅ Back';
       document.getElementById('page-title').textContent = 'Schematic';
+      document.getElementById('main-title').textContent = 'Schematic';
     }
 
     // Garantir que volta corretamente ao index.html
