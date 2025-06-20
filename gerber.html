@@ -83,7 +83,7 @@
 
   <header>
     <button class="back-button" id="back-button" onclick="window.location.href='index.html'">⬅ Back</button>
-    <h1 class="titulo" id="page-title">Gerber</h1>
+    <h1 class="titulo" id="main-title">Gerber</h1>
   </header>
 
   <div class="image-container">
@@ -98,9 +98,11 @@
     if (lang === 'pt-PT') {
       document.getElementById('back-button').textContent = '⬅ Voltar';
       document.getElementById('page-title').textContent = 'Gerber';
+      document.getElementById('main-title').textContent = 'Gerber';
     } else {
       document.getElementById('back-button').textContent = '⬅ Back';
       document.getElementById('page-title').textContent = 'Gerber';
+      document.getElementById('main-title').textContent = 'Gerber';
     }
   </script>
 
