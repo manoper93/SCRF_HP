@@ -104,7 +104,7 @@
   <!-- Header com botão e título -->
   <header>
     <button class="back-button" id="back-button">⬅ Back</button>
-    <h1 class="titulo" id="page-title">Motor Module 3D</h1>
+    <h1 class="titulo" id="main-title">Motor Module 3D</h1>
   </header>
   
   <!-- Visualizador 3D -->
@@ -127,10 +127,12 @@
       document.title = 'Módulo Motor 3D';
       document.getElementById('back-button').textContent = '⬅ Voltar';
       document.getElementById('page-title').textContent = 'Módulo Motor 3D';
+      document.getElementById('main-title').textContent = 'Módulo Motor 3D';
     } else {
       document.title = 'Motor Module 3D';
       document.getElementById('back-button').textContent = '⬅ Back';
       document.getElementById('page-title').textContent = 'Motor Module 3D';
+      document.getElementById('main-title').textContent = 'Motor Module 3D';
     }
 
     document.getElementById('back-button').onclick = () => {
