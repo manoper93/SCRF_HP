@@ -104,33 +104,36 @@
       background-color: #949494;
     }
 
-    .stars {
-      margin: 20px;
-      font-size: 28px;
-      cursor: pointer;
+    .stars-box {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
     }
 
-    .stars span {
+    .stars {
+      font-size: 24px;
+      cursor: pointer;
       color: gold;
     }
 
+    .visit-counter {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
     @media (max-width: 600px) {
-      .logo {
-        max-height: 30px;
-      }
-
-      .btn {
-        font-size: 14px;
-        padding: 10px 20px;
-      }
-
-      .star {
-        font-size: 20px;
-      }
-
-      .hidden-info {
-        display: none;
-      }
+      .logo { max-height: 30px; }
+      .btn { font-size: 14px; padding: 10px 20px; }
     }
   </style>
 </head>
@@ -165,50 +168,73 @@
       <a href="esquematico.html"><button class="btn" id="schematic-btn">📐 Schematic</button></a>
       <a href="gerber.html"><button class="btn" id="gerber-btn">📐 Gerber</button></a>
     </div>
-
-    <div class="stars" id="stars-container">
-      <span data-star="5">&#9733;</span>
-      <span data-star="4">&#9733;</span>
-      <span data-star="3">&#9733;</span>
-      <span data-star="2">&#9733;</span>
-      <span data-star="1">&#9733;</span>
-    </div>
-    <p id="vote-thank" style="display: none;"></p>
   </div>
+</div>
+
+<div class="stars-box">
+  <div id="stars-container" class="stars">
+    <span data-star="5">&#9733;</span>
+    <span data-star="4">&#9733;</span>
+    <span data-star="3">&#9733;</span>
+    <span data-star="2">&#9733;</span>
+    <span data-star="1">&#9733;</span>
+  </div>
+  <p id="vote-thank" style="margin: 5px 0 0; font-size: 12px;"></p>
+</div>
+
+<div class="visit-counter" id="visit-counter">
+  Visits: 1
 </div>
 
 <script>
   const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/';
   const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
 
-  const savedLang = localStorage.getItem('lang') || 'en';
-  document.documentElement.lang = savedLang;
+  const lang = localStorage.getItem('lang') || 'en';
+  document.documentElement.lang = lang;
 
   function applyLangTexts(lang) {
-    if (lang === 'pt-PT') {
-      document.getElementById('page-title').textContent = 'Sistema de Controlo Rádio Frequência';
-      document.getElementById('main-title').textContent = 'Sistema de Controlo Rádio Frequência';
-      document.getElementById('subtitle1').textContent = 'Visualizar Módulos em 3D';
-      document.getElementById('motor-btn').textContent = '⚙️ Módulo Motor';
-      document.getElementById('door-btn').textContent = '🚪 Módulo Porta';
-      document.getElementById('subtitle2').textContent = 'Visualizar Esquemático';
-      document.getElementById('schematic-btn').textContent = '📐 Esquemático';
-      document.getElementById('gerber-btn').textContent = '📐 Gerber';
-      document.getElementById('vote-thank').textContent = 'Obrigado pela sua avaliação!';
-    } else {
-      document.getElementById('page-title').textContent = 'Radio Frequency Control System';
-      document.getElementById('main-title').textContent = 'Radio Frequency Control System';
-      document.getElementById('subtitle1').textContent = 'View Modules in 3D';
-      document.getElementById('motor-btn').textContent = '⚙️ Motor Module';
-      document.getElementById('door-btn').textContent = '🚪 Door Module';
-      document.getElementById('subtitle2').textContent = 'View Schematic';
-      document.getElementById('schematic-btn').textContent = '📐 Schematic';
-      document.getElementById('gerber-btn').textContent = '📐 Gerber';
-      document.getElementById('vote-thank').textContent = 'Thanks for your vote!';
-    }
-  }
+    const t = {
+      "en": {
+        title: "Radio Frequency Control System",
+        subtitle1: "View Modules in 3D",
+        subtitle2: "View Schematic",
+        motor: "⚙️ Motor Module",
+        door: "🚪 Door Module",
+        schematic: "📐 Schematic",
+        gerber: "📐 Gerber",
+        thank: "Thanks for your vote!",
+        confirm: "Confirm vote of",
+        votes: "votes",
+        visits: "Visits"
+      },
+      "pt-PT": {
+        title: "Sistema de Controlo Rádio Frequência",
+        subtitle1: "Visualizar Módulos em 3D",
+        subtitle2: "Visualizar Esquemático",
+        motor: "⚙️ Módulo Motor",
+        door: "🚪 Módulo Porta",
+        schematic: "📐 Esquemático",
+        gerber: "📐 Gerber",
+        thank: "Obrigado pela sua avaliação!",
+        confirm: "Confirmar voto de",
+        votes: "votos",
+        visits: "Visitas"
+      }
+    };
 
-  applyLangTexts(savedLang);
+    const L = t[lang] || t["en"];
+    document.getElementById("page-title").textContent = L.title;
+    document.getElementById("main-title").textContent = L.title;
+    document.getElementById("subtitle1").textContent = L.subtitle1;
+    document.getElementById("subtitle2").textContent = L.subtitle2;
+    document.getElementById("motor-btn").textContent = L.motor;
+    document.getElementById("door-btn").textContent = L.door;
+    document.getElementById("schematic-btn").textContent = L.schematic;
+    document.getElementById("gerber-btn").textContent = L.gerber;
+    document.getElementById("vote-thank").textContent = "";
+    document.getElementById("visit-counter").textContent = `${L.visits}: 1`;
+  }
 
   function toggleLang() {
     const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
@@ -216,8 +242,9 @@
     location.reload();
   }
 
+  applyLangTexts(lang);
+
   function sendData(stars = 0) {
-    const lang = localStorage.getItem('lang') || 'en';
     const data = {
       ip: "0.0.0.0",
       lang: lang,
@@ -249,13 +276,11 @@
   document.querySelectorAll("#stars-container span").forEach(star => {
     star.addEventListener("click", () => {
       const rating = parseInt(star.dataset.star);
-      const lang = localStorage.getItem("lang") || "en";
-      const confirmMsg = lang === "pt-PT" ? `Confirmar voto de ${rating} estrela(s)?` : `Confirm vote of ${rating} star(s)?`;
-
-      if (confirm(confirmMsg)) {
+      const confirmText = lang === "pt-PT" ? `Confirmar voto de ${rating} estrelas?` : `Confirm vote of ${rating} stars?`;
+      if (confirm(confirmText)) {
         localStorage.setItem("stars", rating);
         sendData(rating);
-        document.getElementById("vote-thank").style.display = "block";
+        document.getElementById("vote-thank").textContent = lang === "pt-PT" ? "Obrigado pela sua avaliação!" : "Thanks for your vote!";
       }
     });
   });
