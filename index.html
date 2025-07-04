@@ -204,7 +204,7 @@
         schematic: "📐 Schematic",
         gerber: "📐 Gerber",
         thank: "Thanks for your vote!",
-        confirm: "Confirm vote of",
+        confirm: "Confirm change to",
         visits: "Visits"
       },
       "pt-PT": {
@@ -216,7 +216,7 @@
         schematic: "📐 Esquemático",
         gerber: "📐 Gerber",
         thank: "Obrigado pela sua avaliação!",
-        confirm: "Confirmar voto de",
+        confirm: "Confirmar alteração para",
         visits: "Visitas"
       }
     };
@@ -243,13 +243,13 @@
 
   function sendToBaserow(tipo, valor) {
     const data = {
-      tipo: tipo,
-      valor: valor,
-      date: new Date().toISOString(),
-      localizacao: lang,
-      dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-      os: navigator.platform,
-      browser: navigator.userAgent
+      field_4750715: tipo,
+      field_4750716: valor,
+      field_4750717: new Date().toISOString(),
+      field_4750718: lang,
+      field_4750719: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+      field_4750720: navigator.platform,
+      field_4750721: navigator.userAgent
     };
 
     fetch(BASEROW_API_URL, {
@@ -271,7 +271,7 @@
     })
     .then(res => res.json())
     .then(data => {
-      const total = data.results.filter(row => row.field_4750715 && row.field_4750715.toLowerCase() === "visita").length;
+      const total = data.results.filter(row => row.field_4750715?.toLowerCase() === "visita").length;
       const label = lang === 'pt-PT' ? "Visitas" : "Visits";
       document.getElementById("visit-counter").textContent = `${label}: ${total}`;
     })
@@ -285,21 +285,32 @@
     sendToBaserow("visita", 0);
   }
 
+  function updateStarColors(rating) {
+    document.querySelectorAll("#stars-container span").forEach(star => {
+      const s = parseInt(star.dataset.star);
+      star.style.opacity = s <= rating ? "1" : "0.3";
+    });
+  }
+
   document.querySelectorAll("#stars-container span").forEach(star => {
     star.addEventListener("click", () => {
       const rating = parseInt(star.dataset.star);
+      const current = parseInt(localStorage.getItem("stars") || 0);
       const confirmText = lang === "pt-PT"
-        ? `Confirmar voto de ${rating} estrelas?`
-        : `Confirm vote of ${rating} stars?`;
+        ? `Confirmar alteração para ${rating} estrela(s)?`
+        : `Confirm change to ${rating} star(s)?`;
 
-      if (confirm(confirmText)) {
+      if (current !== rating && confirm(confirmText)) {
         localStorage.setItem("stars", rating);
         sendToBaserow("voto", rating);
+        updateStarColors(rating);
         document.getElementById("vote-thank").textContent = lang === "pt-PT"
           ? "Obrigado pela sua avaliação!" : "Thanks for your vote!";
       }
     });
   });
+
+  updateStarColors(parseInt(localStorage.getItem("stars") || 0));
 </script>
 </body>
 </html>
