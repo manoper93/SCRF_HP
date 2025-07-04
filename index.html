@@ -104,6 +104,16 @@
       background-color: #949494;
     }
 
+    .stars {
+      margin: 20px;
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    .stars span {
+      color: gold;
+    }
+
     @media (max-width: 600px) {
       .logo {
         max-height: 30px;
@@ -124,16 +134,13 @@
     }
   </style>
 </head>
-  
 <body>
 
 <div class="wrapper">
-  <!-- Botão de idioma -->
   <div class="lang-switch">
     <button onclick="toggleLang()">EN / PT</button>
   </div>
 
-  <!-- Cabeçalho com logos -->
   <header class="logo-header">
     <div></div>
     <div class="logo-container">
@@ -156,17 +163,24 @@
 
     <div class="buttons">
       <a href="esquematico.html"><button class="btn" id="schematic-btn">📐 Schematic</button></a>
-    </div>
-
-    <div class="buttons">
       <a href="gerber.html"><button class="btn" id="gerber-btn">📐 Gerber</button></a>
     </div>
+
+    <div class="stars" id="stars-container">
+      <span data-star="5">&#9733;</span>
+      <span data-star="4">&#9733;</span>
+      <span data-star="3">&#9733;</span>
+      <span data-star="2">&#9733;</span>
+      <span data-star="1">&#9733;</span>
+    </div>
+    <p id="vote-thank" style="display: none;"></p>
   </div>
 </div>
 
-<!-- Script de idioma -->
 <script>
-  // Aplica idioma guardado no localStorage
+  const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/';
+  const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
+
   const savedLang = localStorage.getItem('lang') || 'en';
   document.documentElement.lang = savedLang;
 
@@ -180,6 +194,7 @@
       document.getElementById('subtitle2').textContent = 'Visualizar Esquemático';
       document.getElementById('schematic-btn').textContent = '📐 Esquemático';
       document.getElementById('gerber-btn').textContent = '📐 Gerber';
+      document.getElementById('vote-thank').textContent = 'Obrigado pela sua avaliação!';
     } else {
       document.getElementById('page-title').textContent = 'Radio Frequency Control System';
       document.getElementById('main-title').textContent = 'Radio Frequency Control System';
@@ -189,19 +204,61 @@
       document.getElementById('subtitle2').textContent = 'View Schematic';
       document.getElementById('schematic-btn').textContent = '📐 Schematic';
       document.getElementById('gerber-btn').textContent = '📐 Gerber';
+      document.getElementById('vote-thank').textContent = 'Thanks for your vote!';
     }
   }
 
-  // Aplica ao iniciar
   applyLangTexts(savedLang);
 
   function toggleLang() {
     const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
     localStorage.setItem('lang', newLang);
-    // força reload para aplicar novo idioma
     location.reload();
   }
 
+  function sendData(stars = 0) {
+    const lang = localStorage.getItem('lang') || 'en';
+    const data = {
+      ip: "0.0.0.0",
+      lang: lang,
+      stars: stars,
+      browser: navigator.userAgent,
+      system: navigator.platform,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+      datetime: new Date().toISOString()
+    };
+
+    fetch(BASEROW_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": BASEROW_API_TOKEN
+      },
+      body: JSON.stringify({ fields: data })
+    })
+    .then(res => res.ok ? res.json() : Promise.reject("Erro no envio"))
+    .then(result => console.log("Guardado no Baserow:", result))
+    .catch(err => console.error("Erro Baserow:", err));
+  }
+
+  if (!sessionStorage.getItem("visited")) {
+    sessionStorage.setItem("visited", "1");
+    sendData(0);
+  }
+
+  document.querySelectorAll("#stars-container span").forEach(star => {
+    star.addEventListener("click", () => {
+      const rating = parseInt(star.dataset.star);
+      const lang = localStorage.getItem("lang") || "en";
+      const confirmMsg = lang === "pt-PT" ? `Confirmar voto de ${rating} estrela(s)?` : `Confirm vote of ${rating} star(s)?`;
+
+      if (confirm(confirmMsg)) {
+        localStorage.setItem("stars", rating);
+        sendData(rating);
+        document.getElementById("vote-thank").style.display = "block";
+      }
+    });
+  });
 </script>
 </body>
 </html>
