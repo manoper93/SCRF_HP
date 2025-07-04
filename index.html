@@ -166,6 +166,9 @@
 
     <div class="buttons">
       <a href="esquematico.html"><button class="btn" id="schematic-btn">📐 Schematic</button></a>
+    </div>
+
+    <div class="buttons">
       <a href="gerber.html"><button class="btn" id="gerber-btn">📐 Gerber</button></a>
     </div>
   </div>
@@ -182,7 +185,7 @@
   <p id="vote-thank" style="margin: 5px 0 0; font-size: 12px;"></p>
 </div>
 
-<div class="visit-counter" id="visit-counter">Visits: 1</div>
+<div class="visit-counter" id="visit-counter">Visits: ...</div>
 
 <script>
   const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/';
@@ -229,7 +232,6 @@
     document.getElementById("schematic-btn").textContent = L.schematic;
     document.getElementById("gerber-btn").textContent = L.gerber;
     document.getElementById("vote-thank").textContent = "";
-    document.getElementById("visit-counter").textContent = `${L.visits}: 1`;
   }
 
   function toggleLang() {
@@ -263,6 +265,21 @@
     .then(result => console.log("Guardado:", result))
     .catch(err => console.error("Erro Baserow:", err));
   }
+
+  function getVisitCount() {
+    fetch(BASEROW_API_URL + '?user_field_names=true', {
+      headers: { "Authorization": BASEROW_API_TOKEN }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const total = data.results.filter(row => row.tipo && row.tipo.toLowerCase() === "visita").length;
+      const label = lang === 'pt-PT' ? "Visitas" : "Visits";
+      document.getElementById("visit-counter").textContent = `${label}: ${total}`;
+    })
+    .catch(err => console.error("Erro ao contar visitas:", err));
+  }
+
+  getVisitCount();
 
   if (!sessionStorage.getItem("visited")) {
     sessionStorage.setItem("visited", "1");
