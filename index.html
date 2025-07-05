@@ -305,6 +305,7 @@ async function sendToBaserow(tipo, valor) {
     os: userOS,
     browser: userBrowser
   };
+
   await fetch(API_URL, {
     method: 'POST',
     headers: {
@@ -401,22 +402,25 @@ function toggleLang() {
 (function init() {
   document.documentElement.lang = lang;
 
-  // Mostrar voto atual
-  if (userRating !== null && !isNaN(userRating)) updateStars(Number(userRating));
+  // ⭐ Mostrar voto local instantaneamente
+  if (userRating !== null && !isNaN(userRating)) {
+    updateStars(Number(userRating));
+  }
 
-  // Eventos das estrelas
+  // 🎯 Eventos nas estrelas
   stars.forEach(s => {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
 
-  // Carregar dados únicos
+  // 📍 Obter localização e IP apenas uma vez
   getPublicIP();
-  getLocationOnce();
+  getLocationOnce(); // <- AQUI
 
-  // Carregar estatísticas e visita
+  // 🔢 Estatísticas e visitas
   loadData();
   incrementVisit();
 })();
+
 </script>
 
   
