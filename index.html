@@ -446,8 +446,9 @@ for (const key of storedKeys) {
     break;
   }
 }
-
-  updateStars(Number(userRating));
+ if (userRating !== null && !isNaN(userRating)) {
+    updateStars(Number(userRating));
+  }
   loadData();
   incrementVisit();
 
