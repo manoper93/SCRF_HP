@@ -289,11 +289,14 @@ async function sendToBaserow(tipo, valor) {
 async function loadData() {
   console.log("📡 A carregar dados da API:", API_URL);
   try {
-    let offset = 0, limit = 200, all = [];
+    let offset = 0;
+    const limit = 200;
+    const maxPaginas = 500;
+    let all = [];
 
-    while (true) {
+    for (let pagina = 0; pagina < maxPaginas; pagina++) {
       const url = `${API_URL}&limit=${limit}&offset=${offset}`;
-      console.log("➡️ GET:", url);
+      console.log(`➡️ GET página ${pagina + 1}:`, url);
 
       const res = await fetch(url, {
         headers: {
@@ -310,24 +313,28 @@ async function loadData() {
       }
 
       const json = await res.json();
-      if (!json.results) {
-        throw new Error("❗ Resposta inválida: campo 'results' não encontrado");
+      if (!json.results || json.results.length === 0) {
+        console.warn("ℹ️ Nenhum resultado devolvido. A terminar.");
+        break;
       }
 
       all = all.concat(json.results);
-      if (!json.next) break;
       offset += limit;
+
+      if (!json.next) {
+        console.log("✅ Fim da paginação (next == null).");
+        break;
+      }
     }
 
-    // ⬇️ Identificação dos campos (ajusta conforme necessário)
-    const campoTipo = 'field_4750715';   // Ex: tipo ou classificação
-    const campoValor = 'valor';          // Campo numérico
+    // ⬇️ Identificação dos campos
+    const campoTipo = 'field_4750715';
+    const campoValor = 'valor';
 
-    // Contar visitas e votos
     const visitas = all.filter(r => r[campoTipo] === 'visita');
     const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]));
-    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
+    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
       const estrela = parseInt(v[campoTipo]);
       const quantidade = parseInt(v[campoValor]) || 0;
@@ -336,7 +343,7 @@ async function loadData() {
       }
     });
 
-    // Atualizar textos
+    // Atualiza UI
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
