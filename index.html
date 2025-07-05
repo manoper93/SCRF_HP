@@ -287,17 +287,17 @@ async function sendToBaserow(tipo, valor) {
 }
 
 async function loadData() {
-  console.log("📡 A carregar dados da API (com nomes de campos)...");
+  console.log("📡 A carregar dados da API com lógica de votos e visitas refinada...");
 
   try {
     const limit = 500;
     const maxPaginas = 10;
-    const campoTipo = 'tipo';   // ← nome real no Baserow
-    const campoValor = 'valor'; // ← não usado para contagem
+    const campoTipo = 'tipo';    // ← usar nomes com user_field_names=true
+    const campoValor = 'valor';
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
-    // Criar lista de pedidos em paralelo
+    // Criar fetches paralelos
     const requests = Array.from({ length: maxPaginas }, (_, i) => {
       const offset = i * limit;
       const url = `${API_URL}&limit=${limit}&offset=${offset}`;
@@ -314,9 +314,7 @@ async function loadData() {
       });
     });
 
-    // Esperar por todos os resultados (sem falhar tudo se uma der erro)
     const results = await Promise.allSettled(requests);
-
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value.results?.length) {
         all = all.concat(r.value.results);
@@ -325,19 +323,23 @@ async function loadData() {
       }
     }
 
-    // Separar visitas e votos
-    const visitas = all.filter(r => r[campoTipo] === 'visita');
-    const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]));
+    // Contar apenas visitas válidas (tipo === 'visita' && valor === '1')
+    const visitas = all.filter(r => r[campoTipo] === 'visita' && r[campoValor] === '1');
 
-    // Contar 1 voto por registo
+    // Filtrar votos válidos: tipo de 1 a 5 e valor ±1
+    const votos = all.filter(r =>
+      /^[1-5]$/.test(r[campoTipo]) && /^-?1$/.test(r[campoValor])
+    );
+
     votos.forEach(v => {
       const estrela = parseInt(v[campoTipo]);
+      const valor = parseInt(v[campoValor]) || 0;
       if (estrela >= 1 && estrela <= 5) {
-        contagens[estrela] += 1;
+        contagens[estrela] += valor;
       }
     });
 
-    // Atualizar contadores na interface
+    // Atualizar interface
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
