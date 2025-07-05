@@ -193,6 +193,14 @@ const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
 const lang = localStorage.getItem('lang') || 'en';
 document.documentElement.lang = lang;
 
+// Formatar data com fuso horário de Lisboa
+function formatDate() {
+  const now = new Date();
+  const lisbonTime = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/Lisbon" }));
+  const pad = n => n.toString().padStart(2, '0');
+  return `${lisbonTime.getFullYear()}-${pad(lisbonTime.getMonth()+1)}-${pad(lisbonTime.getDate())} ${pad(lisbonTime.getHours())}:${pad(lisbonTime.getMinutes())}:${pad(lisbonTime.getSeconds())}`;
+}
+
 const translations = {
   "en": {
     title: "Radio Frequency Control System",
@@ -220,14 +228,6 @@ const translations = {
   }
 };
 
-function formatDate() {
-  const now = new Date();
-  const lisbonTime = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/Lisbon" }));
-  const pad = n => n.toString().padStart(2, '0');
-  return `${lisbonTime.getFullYear()}-${pad(lisbonTime.getMonth()+1)}-${pad(lisbonTime.getDate())} ${pad(lisbonTime.getHours())}:${pad(lisbonTime.getMinutes())}:${pad(lisbonTime.getSeconds())}`;
-}
-
-
 function applyLangTexts(lang) {
   const t = translations[lang] || translations["en"];
   document.getElementById("page-title").textContent = t.title;
@@ -254,7 +254,7 @@ function sendToBaserow(tipo, valor, localizacao = "N/A") {
   const data = {
     tipo: tipo,
     valor: valor,
-    date: new Date().toISOString(),
+    date: formatDate(),
     localizacao: localizacao,
     dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Telemóvel" : "Computador",
     os: navigator.platform,
@@ -274,20 +274,28 @@ function sendToBaserow(tipo, valor, localizacao = "N/A") {
   .catch(err => console.error("Erro Baserow:", err));
 }
 
-function getVisitCount() {
-  fetch(BASEROW_API_URL, {
-    headers: { "Authorization": BASEROW_API_TOKEN }
-  })
-  .then(res => res.json())
-  .then(data => {
-    const total = data.results.filter(row => row.tipo?.toLowerCase() === "visita").length;
-    const label = lang === 'pt-PT' ? "Visitas" : "Visits";
-    document.getElementById("visit-counter").textContent = `${label}: ${total}`;
-  })
-  .catch(err => console.error("Erro ao contar visitas:", err));
+// Contador total de visitas com paginação
+async function getAllVisits() {
+  let total = 0;
+  let offset = 0;
+  const limit = 200;
+
+  while (true) {
+    const res = await fetch(`${BASEROW_API_URL}&limit=${limit}&offset=${offset}`, {
+      headers: { "Authorization": BASEROW_API_TOKEN }
+    });
+    const json = await res.json();
+    const filtered = json.results.filter(r => r.tipo?.toLowerCase() === "visita");
+    total += filtered.length;
+    if (!json.next) break;
+    offset += limit;
+  }
+
+  const label = lang === 'pt-PT' ? "Visitas" : "Visits";
+  document.getElementById("visit-counter").textContent = `${label}: ${total}`;
 }
 
-getVisitCount();
+getAllVisits();
 
 // Registar visita (uma vez por sessão)
 if (!sessionStorage.getItem("visited")) {
@@ -301,6 +309,7 @@ if (!sessionStorage.getItem("visited")) {
     .catch(() => sendToBaserow("visita", 1));
 }
 
+// Gerir estrelas (votos)
 function updateStarColors(rating) {
   document.querySelectorAll("#stars-container span").forEach(star => {
     const s = parseInt(star.dataset.star);
