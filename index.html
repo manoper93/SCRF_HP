@@ -381,10 +381,17 @@ function toggleLang() {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
 
-  await Promise.all([getPublicIP(), getLocationOnce()]);
-  await incrementVisit();
+  // Começar já IP e localização (mas não esperar)
+  getPublicIP();
+  getLocationOnce();
+
+  // Carregar votos/visitas imediatamente (sem bloquear)
   loadData();
+
+  // A visita pode demorar, mas não bloqueia o resto
+  incrementVisit();
 })();
+
 </script>
   
 </body>
