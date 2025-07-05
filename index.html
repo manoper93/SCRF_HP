@@ -289,52 +289,46 @@ async function sendToBaserow(tipo, valor) {
 async function loadData() {
   console.log("📡 A carregar dados da API:", API_URL);
   try {
-    let offset = 0;
     const limit = 500;
     const maxPaginas = 10;
+    const campoTipo = 'tipo';
+    const campoValor = 'valor';
+    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
-    for (let pagina = 0; pagina < maxPaginas; pagina++) {
+    // Criar todas as promises de fetch (até maxPaginas)
+    const requests = Array.from({ length: maxPaginas }, (_, i) => {
+      const offset = i * limit;
       const url = `${API_URL}&limit=${limit}&offset=${offset}`;
-      console.log(`➡️ GET página ${pagina + 1}:`, url);
-
-      const res = await fetch(url, {
-        headers: {
-          'Authorization': API_TOKEN
+      console.log(`➡️ GET página ${i + 1}:`, url);
+      return fetch(url, {
+        headers: { 'Authorization': API_TOKEN }
+      })
+      .then(async res => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Erro página ${i + 1} (${res.status}): ${text}`);
         }
+        return res.json();
       });
+    });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("❌ Erro na resposta da API:", res.status, errorText);
-        visitDisplay.textContent = 'Erro';
-        ratingDisplay.innerHTML = `<div style="color:red;">GET failed: ${res.status}<br>${errorText}</div>`;
-        return;
-      }
+    // Executar os fetches em paralelo
+    const results = await Promise.allSettled(requests);
 
-      const json = await res.json();
-      if (!json.results || json.results.length === 0) {
-        console.warn("ℹ️ Nenhum resultado devolvido. A terminar.");
-        break;
-      }
-
-      all = all.concat(json.results);
-      offset += limit;
-
-      if (!json.next) {
-        console.log("✅ Fim da paginação (next == null).");
-        break;
+    // Processar resultados válidos
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value.results?.length) {
+        all = all.concat(r.value.results);
+      } else if (r.status === 'rejected') {
+        console.warn("⚠️ Falha num dos pedidos:", r.reason);
       }
     }
 
-    // ⬇️ Identificação dos campos
-    const campoTipo = 'tipo';
-    const campoValor = 'valor';
-
+    // Processamento de visitas e votos
     const visitas = all.filter(r => r[campoTipo] === 'visita');
     const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]));
 
-    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
       const estrela = parseInt(v[campoTipo]);
       const quantidade = parseInt(v[campoValor]) || 0;
@@ -343,7 +337,7 @@ async function loadData() {
       }
     });
 
-    // Atualiza UI
+    // Atualizar UI
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
@@ -355,7 +349,7 @@ async function loadData() {
     }
     ratingDisplay.innerHTML = html;
 
-    console.log("✅ Dados carregados com sucesso.");
+    console.log(`✅ ${all.length} registos processados com sucesso.`);
 
   } catch (err) {
     console.error("🔥 Erro geral no loadData:", err);
