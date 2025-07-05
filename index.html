@@ -437,8 +437,16 @@ function applyLangTexts(lang) {
   applyLangTexts(lang);
 
   // Mostra estrela local de imediato
-  const deviceKey = getDeviceKey(); // sem IP ainda
-  userRating = localStorage.getItem(deviceKey);
+  const storedKeys = Object.keys(localStorage).filter(k => k.startsWith('rating_'));
+for (const key of storedKeys) {
+  const val = localStorage.getItem(key);
+  if (val && !isNaN(val)) {
+    userRating = Number(val);
+    updateStars(userRating);
+    break;
+  }
+}
+
   updateStars(Number(userRating));
   loadData();
   incrementVisit();
