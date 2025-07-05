@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="page-title">Gerber</title>
+  <link rel="icon" href="logo_0.png" type="image/png" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background: url('circuit_background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      font-family: sans-serif;
+    }
+
+    header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      justify-content: center;
+    }
+
+    .back-button {
+      position: absolute;
+      left: 20px;
+      background: #515152;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .back-button:hover {
+      background: #949494;
+    }
+
+    .titulo {
+      font-size: 5vw;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
+      margin: 0;
+      flex-grow: 1;
+    }
+
+    @media (min-width: 600px) {
+      .titulo {
+        font-size: 2rem;
+      }
+    }
+
+    .image-container {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .image-container img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="back-button" id="back-button" onclick="window.location.href='index.html'">⬅ Back</button>
+    <h1 class="titulo" id="main-title">Gerber</h1>
+  </header>
+
+  <div class="image-container">
+    <img src="gerber.png" alt="Gerber" />
+  </div>
+
+  <script>
+    const lang = localStorage.getItem('lang') || 'en';
+
+    document.documentElement.lang = lang;
+
+    if (lang === 'pt-PT') {
+      document.getElementById('back-button').textContent = '⬅ Voltar';
+      document.getElementById('page-title').textContent = 'Gerber';
+      document.getElementById('main-title').textContent = 'Gerber';
+    } else {
+      document.getElementById('back-button').textContent = '⬅ Back';
+      document.getElementById('page-title').textContent = 'Gerber';
+      document.getElementById('main-title').textContent = 'Gerber';
+    }
+  </script>
+
+</body>
+</html>
