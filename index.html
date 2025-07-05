@@ -188,132 +188,144 @@
 <div class="visit-counter" id="visit-counter">Visits: ...</div>
 
 <script>
-  const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
-  const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
-  const lang = localStorage.getItem('lang') || 'en';
-  document.documentElement.lang = lang;
+const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
+const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
+const lang = localStorage.getItem('lang') || 'en';
+document.documentElement.lang = lang;
 
-  const translations = {
-    "en": {
-      title: "Radio Frequency Control System",
-      subtitle1: "View Modules in 3D",
-      subtitle2: "View Schematic",
-      motor: "⚙️ Motor Module",
-      door: "🚪 Door Module",
-      schematic: "📐 Schematic",
-      gerber: "📐 Gerber",
-      thank: "Thanks for your vote!",
-      confirm: "Confirm change to",
-      visits: "Visits"
-    },
-    "pt-PT": {
-      title: "Sistema de Controlo Rádio Frequência",
-      subtitle1: "Visualizar Módulos em 3D",
-      subtitle2: "Visualizar Esquemático",
-      motor: "⚙️ Módulo Motor",
-      door: "🚪 Módulo Porta",
-      schematic: "📐 Esquemático",
-      gerber: "📐 Gerber",
-      thank: "Obrigado pela sua avaliação!",
-      confirm: "Confirmar alteração para",
-      visits: "Visitas"
-    }
+const translations = {
+  "en": {
+    title: "Radio Frequency Control System",
+    subtitle1: "View Modules in 3D",
+    subtitle2: "View Schematic",
+    motor: "⚙️ Motor Module",
+    door: "🚪 Door Module",
+    schematic: "📐 Schematic",
+    gerber: "📐 Gerber",
+    thank: "Thanks for your vote!",
+    confirm: "Confirm change to",
+    visits: "Visits"
+  },
+  "pt-PT": {
+    title: "Sistema de Controlo Rádio Frequência",
+    subtitle1: "Visualizar Módulos em 3D",
+    subtitle2: "Visualizar Esquemático",
+    motor: "⚙️ Módulo Motor",
+    door: "🚪 Módulo Porta",
+    schematic: "📐 Esquemático",
+    gerber: "📐 Gerber",
+    thank: "Obrigado pela sua avaliação!",
+    confirm: "Confirmar alteração para",
+    visits: "Visitas"
+  }
+};
+
+function applyLangTexts(lang) {
+  const t = translations[lang] || translations["en"];
+  document.getElementById("page-title").textContent = t.title;
+  document.getElementById("main-title").textContent = t.title;
+  document.getElementById("subtitle1").textContent = t.subtitle1;
+  document.getElementById("subtitle2").textContent = t.subtitle2;
+  document.getElementById("motor-btn").textContent = t.motor;
+  document.getElementById("door-btn").textContent = t.door;
+  document.getElementById("schematic-btn").textContent = t.schematic;
+  document.getElementById("gerber-btn").textContent = t.gerber;
+  document.getElementById("vote-thank").textContent = "";
+  document.getElementById("visit-counter").textContent = `${t.visits}: ...`;
+}
+
+function toggleLang() {
+  const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
+  localStorage.setItem('lang', newLang);
+  location.reload();
+}
+
+applyLangTexts(lang);
+
+function sendToBaserow(tipo, valor, localizacao = "N/A") {
+  const data = {
+    tipo: tipo,
+    valor: valor,
+    date: new Date().toISOString(),
+    localizacao: localizacao,
+    dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Telemóvel" : "Computador",
+    os: navigator.platform,
+    browser: navigator.userAgent
   };
 
-  function applyLangTexts(lang) {
-    const t = translations[lang] || translations["en"];
-    document.getElementById("page-title").textContent = t.title;
-    document.getElementById("main-title").textContent = t.title;
-    document.getElementById("subtitle1").textContent = t.subtitle1;
-    document.getElementById("subtitle2").textContent = t.subtitle2;
-    document.getElementById("motor-btn").textContent = t.motor;
-    document.getElementById("door-btn").textContent = t.door;
-    document.getElementById("schematic-btn").textContent = t.schematic;
-    document.getElementById("gerber-btn").textContent = t.gerber;
-    document.getElementById("vote-thank").textContent = "";
-    document.getElementById("visit-counter").textContent = `${t.visits}: ...`;
-  }
+  fetch(BASEROW_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": BASEROW_API_TOKEN
+    },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.ok ? res.json() : Promise.reject("Erro no envio"))
+  .then(result => console.log("Enviado:", result))
+  .catch(err => console.error("Erro Baserow:", err));
+}
 
-  function toggleLang() {
-    const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
-    localStorage.setItem('lang', newLang);
-    location.reload();
-  }
+function getVisitCount() {
+  fetch(BASEROW_API_URL, {
+    headers: { "Authorization": BASEROW_API_TOKEN }
+  })
+  .then(res => res.json())
+  .then(data => {
+    const total = data.results.filter(row => row.tipo?.toLowerCase() === "visita").length;
+    const label = lang === 'pt-PT' ? "Visitas" : "Visits";
+    document.getElementById("visit-counter").textContent = `${label}: ${total}`;
+  })
+  .catch(err => console.error("Erro ao contar visitas:", err));
+}
 
-  applyLangTexts(lang);
+getVisitCount();
 
-  function sendToBaserow(tipo, valor) {
-    const data = {
-      tipo: tipo,
-      valor: valor,
-      date: new Date().toISOString(),
-      localizacao: Intl.DateTimeFormat().resolvedOptions().locale,
-      dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Telemóvel" : "Computador",
-      os: navigator.platform,
-      browser: navigator.userAgent
-    };
-
-    fetch(BASEROW_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": BASEROW_API_TOKEN
-      },
-      body: JSON.stringify(data)
-    })
-    .then(res => res.ok ? res.json() : Promise.reject("Erro no envio"))
-    .then(result => console.log("Enviado com sucesso:", result))
-    .catch(err => console.error("Erro ao enviar para o Baserow:", err));
-  }
-
-  function getVisitCount() {
-    fetch(BASEROW_API_URL, {
-      headers: { "Authorization": BASEROW_API_TOKEN }
-    })
+// Registar visita (uma vez por sessão)
+if (!sessionStorage.getItem("visited")) {
+  sessionStorage.setItem("visited", "1");
+  fetch("https://ipapi.co/json/")
     .then(res => res.json())
-    .then(data => {
-      const total = data.results.filter(row => row.tipo?.toLowerCase() === "visita").length;
-      const label = lang === 'pt-PT' ? "Visitas" : "Visits";
-      document.getElementById("visit-counter").textContent = `${label}: ${total}`;
+    .then(loc => {
+      const local = `${loc.city}, ${loc.region}, ${loc.country_name}`;
+      sendToBaserow("visita", 0, local);
     })
-    .catch(err => console.error("Erro ao contar visitas:", err));
-  }
+    .catch(() => sendToBaserow("visita", 0));
+}
 
-  getVisitCount();
-
-  if (!sessionStorage.getItem("visited")) {
-    sessionStorage.setItem("visited", "1");
-    sendToBaserow("visita", 0);
-  }
-
-  function updateStarColors(rating) {
-    document.querySelectorAll("#stars-container span").forEach(star => {
-      const s = parseInt(star.dataset.star);
-      star.style.opacity = s <= rating ? "1" : "0.3";
-    });
-  }
-
+function updateStarColors(rating) {
   document.querySelectorAll("#stars-container span").forEach(star => {
-    star.addEventListener("click", () => {
-      const rating = parseInt(star.dataset.star);
-      const current = parseInt(localStorage.getItem("stars") || 0);
-      const confirmText = lang === "pt-PT"
-        ? `Confirmar alteração para ${rating} estrela(s)?`
-        : `Confirm change to ${rating} star(s)?`;
-
-      if (current !== rating && confirm(confirmText)) {
-        localStorage.setItem("stars", rating);
-        sendToBaserow("voto", rating);
-        updateStarColors(rating);
-        document.getElementById("vote-thank").textContent = lang === "pt-PT"
-          ? "Obrigado pela sua avaliação!" : "Thanks for your vote!";
-      }
-    });
+    const s = parseInt(star.dataset.star);
+    star.style.opacity = s <= rating ? "1" : "0.3";
   });
+}
 
-  updateStarColors(parseInt(localStorage.getItem("stars") || 0));
+document.querySelectorAll("#stars-container span").forEach(star => {
+  star.addEventListener("click", () => {
+    const rating = parseInt(star.dataset.star);
+    const current = parseInt(localStorage.getItem("stars") || 0);
+    const confirmText = lang === "pt-PT"
+      ? `Confirmar alteração para ${rating} estrela(s)?`
+      : `Confirm change to ${rating} star(s)?`;
+
+    if (current !== rating && confirm(confirmText)) {
+      localStorage.setItem("stars", rating);
+      fetch("https://ipapi.co/json/")
+        .then(res => res.json())
+        .then(loc => {
+          const local = `${loc.city}, ${loc.region}, ${loc.country_name}`;
+          sendToBaserow("voto", rating, local);
+        })
+        .catch(() => sendToBaserow("voto", rating));
+      updateStarColors(rating);
+      document.getElementById("vote-thank").textContent = lang === "pt-PT"
+        ? "Obrigado pela sua avaliação!" : "Thanks for your vote!";
+    }
+  });
+});
+
+updateStarColors(parseInt(localStorage.getItem("stars") || 0));
 </script>
-
   
 </body>
 </html>
