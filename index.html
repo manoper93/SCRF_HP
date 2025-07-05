@@ -104,41 +104,54 @@
       background-color: #949494;
     }
 
-    .stars-box {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      z-index: 1000;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 10px;
-    }
-
-    .stars {
-      font-size: 24px;
-      cursor: pointer;
-      color: gold;
-    }
-
-    .visit-counter {
+    .visitor-counter {
       position: fixed;
       bottom: 10px;
       left: 10px;
-      z-index: 1000;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 10px;
+      background-color: rgba(0,0,0,0.4);
+      padding: 6px 10px;
+      border-radius: 8px;
       font-size: 14px;
     }
 
+    .rating-widget {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background-color: rgba(0,0,0,0.4);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    .star {
+      font-size: 24px;
+      color: gray;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .star.selected {
+      color: gold;
+    }
+
     @media (max-width: 600px) {
-      .logo { max-height: 30px; }
-      .btn { font-size: 14px; padding: 10px 20px; }
+      .logo {
+        max-height: 30px;
+      }
+      .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+      }
+      .star {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
-<body>
 
+<body>
 <div class="wrapper">
   <div class="lang-switch">
     <button onclick="toggleLang()">EN / PT</button>
@@ -156,14 +169,12 @@
   <div class="main-content">
     <h1 id="main-title">Radio Frequency Control System</h1>
     <h2 id="subtitle1">View Modules in 3D</h2>
-
     <div class="buttons">
       <a href="motor.html"><button class="btn" id="motor-btn">⚙️ Motor Module</button></a>
       <a href="porta.html"><button class="btn" id="door-btn">🚪 Door Module</button></a>
     </div>
 
     <h2 id="subtitle2">View Schematic</h2>
-
     <div class="buttons">
       <a href="esquematico.html"><button class="btn" id="schematic-btn">📐 Schematic</button></a>
     </div>
@@ -173,6 +184,7 @@
     </div>
   </div>
 </div>
+
 <div class="visitor-counter">
   <div id="visit-label">Public visits: <span id="visit-count">Loading...</span></div>
 </div>
@@ -191,7 +203,6 @@
 <script>
 const API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
 const API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
-
 const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const stars = document.querySelectorAll('.star');
@@ -331,21 +342,51 @@ stars.forEach(s => {
   });
 });
 
+function toggleLang() {
+  const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
+  localStorage.setItem('lang', newLang);
+  location.reload();
+}
+
+const savedLang = localStorage.getItem('lang') || 'en';
+document.documentElement.lang = savedLang;
+
+function applyLangTexts(lang) {
+  const texts = {
+    'pt-PT': {
+      title: 'Sistema de Controlo Rádio Frequência',
+      subtitle1: 'Visualizar Módulos em 3D',
+      subtitle2: 'Visualizar Esquemático',
+      motor: '⚙️ Módulo Motor',
+      door: '🚪 Módulo Porta',
+      schematic: '📐 Esquemático',
+      gerber: '📐 Gerber'
+    },
+    'en': {
+      title: 'Radio Frequency Control System',
+      subtitle1: 'View Modules in 3D',
+      subtitle2: 'View Schematic',
+      motor: '⚙️ Motor Module',
+      door: '🚪 Door Module',
+      schematic: '📐 Schematic',
+      gerber: '📐 Gerber'
+    }
+  };
+  const t = texts[lang] || texts['en'];
+  document.getElementById('page-title').textContent = t.title;
+  document.getElementById('main-title').textContent = t.title;
+  document.getElementById('subtitle1').textContent = t.subtitle1;
+  document.getElementById('subtitle2').textContent = t.subtitle2;
+  document.getElementById('motor-btn').textContent = t.motor;
+  document.getElementById('door-btn').textContent = t.door;
+  document.getElementById('schematic-btn').textContent = t.schematic;
+  document.getElementById('gerber-btn').textContent = t.gerber;
+}
+
+applyLangTexts(savedLang);
 if (userRating) updateStars(parseInt(userRating));
 incrementVisit().then(loadData);
 </script>
-
-<style>
-  .star {
-    font-size: 24px;
-    color: gray;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  .star.selected {
-    color: gold;
-  }
-</style>
 
 </body>
 </html>
