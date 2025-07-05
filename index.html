@@ -210,8 +210,8 @@ const ratingDisplay = document.getElementById('rating-counts');
 const lang = localStorage.getItem('lang') || 'en';
 
 let userRating = localStorage.getItem(`rating_${USER_UUID}`);
-let userIP = getPublicIP();
-let userLocation = getLocationOnce();
+let userIP = '';
+let userLocation = '';
 const userDevice = getDeviceModel();
 const userOS = getOS();
 const userBrowser = getBrowser();
@@ -263,7 +263,11 @@ async function getPublicIP() {
 // 📍 Localização
 async function getLocationOnce() {
   return new Promise(resolve => {
-    if (!navigator.geolocation) return resolve();
+    if (!navigator.geolocation) {
+      userLocation = 'não suportada';
+      return resolve();
+    }
+
     navigator.geolocation.getCurrentPosition(async pos => {
       const { latitude, longitude } = pos.coords;
       try {
@@ -399,26 +403,24 @@ function toggleLang() {
 }
 
 // 🚀 Início rápido
-(function init() {
+(async function init() {
   document.documentElement.lang = lang;
 
-  // ⭐ Mostrar voto local instantaneamente
   if (userRating !== null && !isNaN(userRating)) {
     updateStars(Number(userRating));
   }
 
-  // 🎯 Eventos nas estrelas
   stars.forEach(s => {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
 
-  // 📍 Obter localização e IP apenas uma vez
-  getPublicIP();
-  getLocationOnce(); // <- AQUI
+  await Promise.all([
+    getPublicIP(),
+    getLocationOnce()
+  ]);
 
-  // 🔢 Estatísticas e visitas
+  await incrementVisit();
   loadData();
-  incrementVisit();
 })();
 
 </script>
