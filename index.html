@@ -309,10 +309,11 @@ async function loadData() {
       offset += limit;
     }
 
-    const visitas = all.filter(r => r.tipo === 'visita');
-    const votos = all.filter(r => /^[1-5]$/.test(r.tipo));
+    // Corrige o nome do campo tipo para field_4750715
+    const visitas = all.filter(r => r.field_4750715 === 'visita');
+    const votos = all.filter(r => /^[1-5]$/.test(r.field_4750715));
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    votos.forEach(v => contagens[v.tipo] += parseInt(v.valor || 0));
+    votos.forEach(v => contagens[v.field_4750715] += parseInt(v.valor || 0));
 
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
@@ -331,7 +332,7 @@ async function loadData() {
     ratingDisplay.innerHTML = `<div style="color:red;">Erro de rede ou JSON<br>${err}</div>`;
   }
 }
-
+  
 async function incrementVisit() {
   if (!sessionStorage.getItem('visited')) {
     await sendToBaserow('visita', 1);
