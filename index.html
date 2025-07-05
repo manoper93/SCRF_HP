@@ -446,7 +446,7 @@ function applyLangTexts(lang) {
 }
 
 applyLangTexts(savedLang);
-if (userRating) updateStars(parseInt(userRating));
+updateStars(Number(userRating));
 incrementVisit().then(loadData);
 </script>
 
