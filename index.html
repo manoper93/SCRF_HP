@@ -442,9 +442,9 @@ function applyLangTexts(lang) {
   // Mostra estrela local instantaneamente
   const deviceKey = getDeviceKey(); // sem IP
   userRating = localStorage.getItem(deviceKey);
-  if (userRating !== null && !isNaN(userRating)) {
-    updateStars(Number(userRating));
-  }
+
+  updateStars(Number(userRating));
+  
 
   loadData();          // rápido e assíncrono
   incrementVisit();    // contagem
