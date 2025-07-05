@@ -287,35 +287,56 @@ async function sendToBaserow(tipo, valor) {
 }
 
 async function loadData() {
-  console.log("A carregar dados da API:", API_URL);
+  console.log("📡 A carregar dados da API:", API_URL);
   try {
-    let total = 0, offset = 0, limit = 200, all = [];
+    let offset = 0, limit = 200, all = [];
 
     while (true) {
-      const res = await fetch(`${API_URL}&limit=${limit}&offset=${offset}`, {
-        headers: { 'Authorization': API_TOKEN }
+      const url = `${API_URL}&limit=${limit}&offset=${offset}`;
+      console.log("➡️ GET:", url);
+
+      const res = await fetch(url, {
+        headers: {
+          'Authorization': API_TOKEN
+        }
       });
 
       if (!res.ok) {
         const errorText = await res.text();
+        console.error("❌ Erro na resposta da API:", res.status, errorText);
         visitDisplay.textContent = 'Erro';
         ratingDisplay.innerHTML = `<div style="color:red;">GET failed: ${res.status}<br>${errorText}</div>`;
-        console.error("GET error:", res.status, errorText);
         return;
       }
 
       const json = await res.json();
+      if (!json.results) {
+        throw new Error("❗ Resposta inválida: campo 'results' não encontrado");
+      }
+
       all = all.concat(json.results);
       if (!json.next) break;
       offset += limit;
     }
 
-    // Corrige o nome do campo tipo para field_4750715
-    const visitas = all.filter(r => r.field_4750715 === 'visita');
-    const votos = all.filter(r => /^[1-5]$/.test(r.field_4750715));
-    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    votos.forEach(v => contagens[v.field_4750715] += parseInt(v.valor || 0));
+    // ⬇️ Identificação dos campos (ajusta conforme necessário)
+    const campoTipo = 'field_4750715';   // Ex: tipo ou classificação
+    const campoValor = 'valor';          // Campo numérico
 
+    // Contar visitas e votos
+    const visitas = all.filter(r => r[campoTipo] === 'visita');
+    const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]));
+    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    votos.forEach(v => {
+      const estrela = parseInt(v[campoTipo]);
+      const quantidade = parseInt(v[campoValor]) || 0;
+      if (estrela >= 1 && estrela <= 5) {
+        contagens[estrela] += quantidade;
+      }
+    });
+
+    // Atualizar textos
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
@@ -327,10 +348,12 @@ async function loadData() {
     }
     ratingDisplay.innerHTML = html;
 
+    console.log("✅ Dados carregados com sucesso.");
+
   } catch (err) {
-    console.error("Erro geral no loadData:", err);
+    console.error("🔥 Erro geral no loadData:", err);
     visitDisplay.textContent = 'Erro';
-    ratingDisplay.innerHTML = `<div style="color:red;">Erro de rede ou JSON<br>${err}</div>`;
+    ratingDisplay.innerHTML = `<div style="color:red;">Erro de rede ou JSON<br>${err.message || err}</div>`;
   }
 }
   
