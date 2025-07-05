@@ -374,9 +374,42 @@ function toggleLang() {
   localStorage.setItem('lang', newLang);
   location.reload();
 }
-
+  
+function applyLangTexts(lang) {
+  const texts = {
+    'pt-PT': {
+      title: 'Sistema de Controlo Rádio Frequência',
+      subtitle1: 'Visualizar Módulos em 3D',
+      subtitle2: 'Visualizar Esquemático',
+      motor: '⚙️ Módulo Motor',
+      door: '🚪 Módulo Porta',
+      schematic: '📐 Esquemático',
+      gerber: '📐 Gerber'
+    },
+    'en': {
+      title: 'Radio Frequency Control System',
+      subtitle1: 'View Modules in 3D',
+      subtitle2: 'View Schematic',
+      motor: '⚙️ Motor Module',
+      door: '🚪 Door Module',
+      schematic: '📐 Schematic',
+      gerber: '📐 Gerber'
+    }
+  };
+  const t = texts[lang] || texts['en'];
+  document.getElementById('page-title').textContent = t.title;
+  document.getElementById('main-title').textContent = t.title;
+  document.getElementById('subtitle1').textContent = t.subtitle1;
+  document.getElementById('subtitle2').textContent = t.subtitle2;
+  document.getElementById('motor-btn').textContent = t.motor;
+  document.getElementById('door-btn').textContent = t.door;
+  document.getElementById('schematic-btn').textContent = t.schematic;
+  document.getElementById('gerber-btn').textContent = t.gerber;
+}
+  
 (async function init() {
   document.documentElement.lang = lang;
+  applyLangTexts(lang);
 
   if (userRating !== null && !isNaN(userRating)) {
     updateStars(Number(userRating));
