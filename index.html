@@ -221,9 +221,10 @@ const translations = {
 };
 
 function formatDate() {
-  const d = new Date();
+  const now = new Date();
+  const lisbonTime = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/Lisbon" }));
   const pad = n => n.toString().padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return `${lisbonTime.getFullYear()}-${pad(lisbonTime.getMonth()+1)}-${pad(lisbonTime.getDate())} ${pad(lisbonTime.getHours())}:${pad(lisbonTime.getMinutes())}:${pad(lisbonTime.getSeconds())}`;
 }
 
 function applyLangTexts(lang) {
