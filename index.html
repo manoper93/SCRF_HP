@@ -210,11 +210,10 @@ const lang = localStorage.getItem('lang') || 'en';
 let userRating = null;
 let userIP = null;
 
-// Funções utilitárias
+// 🧠 Utilitários
 function getDeviceModel() {
   return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 }
-
 function getOS() {
   const ua = navigator.userAgent;
   if (/Android/.test(ua)) return 'Android';
@@ -224,7 +223,6 @@ function getOS() {
   if (/Linux/.test(ua)) return 'Linux';
   return 'Desconhecido';
 }
-
 function getBrowser() {
   const ua = navigator.userAgent;
   if (/Edg\//.test(ua)) return "Edge";
@@ -234,11 +232,9 @@ function getBrowser() {
   if (/Firefox\//.test(ua)) return "Firefox";
   return "Desconhecido";
 }
-
-function getDeviceKey(ip = '') {
+function getDeviceKey(ip = 'anon') {
   return `rating_${ip}_${getDeviceModel()}_${getOS()}_${getBrowser()}`;
 }
-
 async function getPublicIP() {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -248,14 +244,12 @@ async function getPublicIP() {
     return 'unknown';
   }
 }
-
 function formatDateLisbon() {
   const now = new Date();
   const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
   const pad = n => n.toString().padStart(2, '0');
   return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
 }
-
 async function getLocation() {
   return new Promise((resolve) => {
     if (navigator.geolocation) {
@@ -269,7 +263,7 @@ async function getLocation() {
           const region = data.address.state || '';
           const country = data.address.country || '';
           resolve(`${city}, ${region}, ${country}`);
-        } catch (e) {
+        } catch {
           resolve(lang === 'pt-PT' ? 'Localização exata indisponível' : 'Exact location unavailable');
         }
       }, () => {
@@ -280,7 +274,6 @@ async function getLocation() {
     }
   });
 }
-
 async function sendToBaserow(tipo, valor) {
   const localizacao = await getLocation();
   const data = {
@@ -303,16 +296,19 @@ async function sendToBaserow(tipo, valor) {
   });
 }
 
+// ⭐ Atualizar estrelas
 function updateStars(n) {
   stars.forEach(s => {
     s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
   });
 }
 
+// ⭐ Enviar voto
 async function sendVote(n) {
-  const deviceKey = getDeviceKey(userIP || '');
-  const stored = localStorage.getItem(deviceKey);
+  const keyAnon = getDeviceKey(); // sem IP
+  const keyWithIP = getDeviceKey(userIP || '');
 
+  const stored = localStorage.getItem(keyAnon);
   if (stored && parseInt(stored) === n) {
     alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
     return;
@@ -329,18 +325,23 @@ async function sendVote(n) {
 
   if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1);
   await sendToBaserow(n, 1);
-  localStorage.setItem(deviceKey, n);
+
+  localStorage.setItem(keyAnon, n);         // para mostrar imediatamente
+  if (userIP) localStorage.setItem(keyWithIP, n); // para controle por IP
+
   userRating = n;
   updateStars(n);
   await loadData();
 }
 
+// 🎯 Eventos das estrelas
 stars.forEach(s => {
   s.addEventListener('click', () => {
     sendVote(parseInt(s.dataset.value));
   });
 });
 
+// 👣 Visitas
 async function incrementVisit() {
   if (!sessionStorage.getItem('visited')) {
     await sendToBaserow('visita', 1);
@@ -348,39 +349,28 @@ async function incrementVisit() {
   }
 }
 
+// 📊 Estatísticas
 async function loadData() {
   try {
-    const limit = 500;
-    const campoTipo = 'tipo';
-    const campoValor = 'valor';
-    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    let all = [];
-
-    const res = await fetch(`${API_URL}&limit=${limit}&offset=0`, {
+    const res = await fetch(`${API_URL}&limit=500&offset=0`, {
       headers: { 'Authorization': API_TOKEN }
     });
     const json = await res.json();
-    all = all.concat(json.results);
+    const all = json.results;
 
-    const visitas = all.filter(r =>
-      r[campoTipo] === 'visita' && r[campoValor] === '1'
-    );
+    const visitas = all.filter(r => r.tipo === 'visita' && r.valor === '1');
+    const votos = all.filter(r => /^[1-5]$/.test(r.tipo) && /^-?1$/.test(r.valor));
 
-    const votos = all.filter(r =>
-      /^[1-5]$/.test(r[campoTipo]) && /^-?1$/.test(r[campoValor])
-    );
-
+    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
-      const estrela = parseInt(v[campoTipo]);
-      const valor = parseInt(v[campoValor]);
-      if (estrela >= 1 && estrela <= 5 && (valor === 1 || valor === -1)) {
-        contagens[estrela] += valor;
-      }
+      const estrela = parseInt(v.tipo);
+      const valor = parseInt(v.valor);
+      contagens[estrela] += valor;
     });
 
-    const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
+    const label = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
-    document.getElementById('visit-label').firstChild.textContent = visitLabel;
+    document.getElementById('visit-label').firstChild.textContent = label;
 
     let html = '';
     for (let i = 5; i >= 1; i--) {
@@ -396,12 +386,12 @@ async function loadData() {
   }
 }
 
+// 🌍 Idioma
 function toggleLang() {
   const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
   localStorage.setItem('lang', newLang);
   location.reload();
 }
-
 function applyLangTexts(lang) {
   const texts = {
     'pt-PT': {
@@ -434,22 +424,23 @@ function applyLangTexts(lang) {
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
 
-// ⚡️ INICIALIZAÇÃO RÁPIDA
+// 🚀 Início
 (function init() {
   document.documentElement.lang = lang;
   applyLangTexts(lang);
 
-  // Mostra estrela local instantaneamente
-  const deviceKey = getDeviceKey(); // sem IP
-  userRating = localStorage.getItem(deviceKey);
+  // ⭐ Mostrar estrela local de imediato
+  const keyAnon = getDeviceKey(); // sem IP
+  userRating = localStorage.getItem(keyAnon);
   if (userRating !== null && !isNaN(userRating)) {
     updateStars(Number(userRating));
   }
 
-  loadData();          // rápido e assíncrono
-  incrementVisit();    // contagem
+  // ⚙️ Correr serviços
+  loadData();
+  incrementVisit();
 
-  // Obtém IP em paralelo
+  // 🌐 Obter IP depois
   getPublicIP().then(ip => {
     userIP = ip;
   });
