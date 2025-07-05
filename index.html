@@ -323,10 +323,12 @@ function updateStars(n) {
 async function sendVote(n) {
   const key = `rating_${USER_UUID}`;
   const stored = localStorage.getItem(key);
+
   if (stored && parseInt(stored) === n) {
     alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
     return;
   }
+
   const ask = stored
     ? (lang === 'pt-PT'
         ? `Votou ${stored} estrela(s). Quer alterar para ${n}?`
@@ -336,13 +338,18 @@ async function sendVote(n) {
         : `Do you want to vote ${n} star(s)?`);
   if (!confirm(ask)) return;
 
+  // Mostrar mensagem de atualização
+  ratingDisplay.innerHTML = `<div style="color:orange;">${lang === 'pt-PT' ? 'A atualizar…' : 'Updating…'}</div>`;
+
   if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1);
   await sendToBaserow(n, 1);
 
   localStorage.setItem(key, n);
   userRating = n;
   updateStars(n);
-  loadData();
+
+  // Atualizar os votos
+  await loadData();
 }
 
 // ✨ Eventos nas estrelas
