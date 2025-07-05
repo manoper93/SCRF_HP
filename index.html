@@ -296,9 +296,9 @@ if (!sessionStorage.getItem("visited")) {
     .then(res => res.json())
     .then(loc => {
       const local = `${loc.city}, ${loc.region}, ${loc.country_name}`;
-      sendToBaserow("visita", 0, local);
+      sendToBaserow("visita", 1, local);
     })
-    .catch(() => sendToBaserow("visita", 0));
+    .catch(() => sendToBaserow("visita", 1));
 }
 
 function updateStarColors(rating) {
