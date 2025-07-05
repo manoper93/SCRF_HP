@@ -388,6 +388,9 @@ async function incrementVisit() {
   if (!sessionStorage.getItem('visited')) {
     await sendToBaserow('visita', 1);
     sessionStorage.setItem('visited', 'true');
+    if (userLocation === 'desconhecido') {
+      await getLocationOnce();
+    }
   }
 }
 
