@@ -210,11 +210,10 @@ const lang = localStorage.getItem('lang') || 'en';
 let userRating = null;
 let userIP = null;
 
-// Funções utilitárias
+// Utilitários
 function getDeviceModel() {
   return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 }
-
 function getOS() {
   const ua = navigator.userAgent;
   if (/Android/.test(ua)) return 'Android';
@@ -224,7 +223,6 @@ function getOS() {
   if (/Linux/.test(ua)) return 'Linux';
   return 'Desconhecido';
 }
-
 function getBrowser() {
   const ua = navigator.userAgent;
   if (/Edg\//.test(ua)) return "Edge";
@@ -234,11 +232,9 @@ function getBrowser() {
   if (/Firefox\//.test(ua)) return "Firefox";
   return "Desconhecido";
 }
-
 function getDeviceKey(ip = '') {
   return `rating_${ip}_${getDeviceModel()}_${getOS()}_${getBrowser()}`;
 }
-
 async function getPublicIP() {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -248,14 +244,12 @@ async function getPublicIP() {
     return 'unknown';
   }
 }
-
 function formatDateLisbon() {
   const now = new Date();
   const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
   const pad = n => n.toString().padStart(2, '0');
   return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
 }
-
 async function getLocation() {
   return new Promise((resolve) => {
     if (navigator.geolocation) {
@@ -280,7 +274,6 @@ async function getLocation() {
     }
   });
 }
-
 async function sendToBaserow(tipo, valor) {
   const localizacao = await getLocation();
   const data = {
@@ -303,12 +296,14 @@ async function sendToBaserow(tipo, valor) {
   });
 }
 
+// Atualiza as estrelas visualmente
 function updateStars(n) {
   stars.forEach(s => {
     s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
   });
 }
 
+// Enviar voto ao clicar
 async function sendVote(n) {
   const deviceKey = getDeviceKey(userIP || '');
   const stored = localStorage.getItem(deviceKey);
@@ -335,6 +330,7 @@ async function sendVote(n) {
   await loadData();
 }
 
+// Adiciona eventos às estrelas
 stars.forEach(s => {
   s.addEventListener('click', () => {
     sendVote(parseInt(s.dataset.value));
@@ -396,6 +392,7 @@ async function loadData() {
   }
 }
 
+// Alternar idioma
 function toggleLang() {
   const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
   localStorage.setItem('lang', newLang);
@@ -434,27 +431,26 @@ function applyLangTexts(lang) {
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
 
-// ⚡️ INICIALIZAÇÃO RÁPIDA
+// ⚡ Início rápido
 (function init() {
   document.documentElement.lang = lang;
   applyLangTexts(lang);
 
-  // Mostra estrela local instantaneamente
-  const deviceKey = getDeviceKey(); // sem IP
+  // Mostra estrela local de imediato
+  const deviceKey = getDeviceKey(); // sem IP ainda
   userRating = localStorage.getItem(deviceKey);
+  if (userRating !== null && !isNaN(userRating)) {
+    updateStars(Number(userRating));
+  }
 
-  updateStars(Number(userRating));
-  
+  loadData();
+  incrementVisit();
 
-  loadData();          // rápido e assíncrono
-  incrementVisit();    // contagem
-
-  // Obtém IP em paralelo
   getPublicIP().then(ip => {
     userIP = ip;
   });
 })();
 </script>
-
+  
 </body>
 </html>
