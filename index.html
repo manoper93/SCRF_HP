@@ -227,6 +227,7 @@ function formatDate() {
   return `${lisbonTime.getFullYear()}-${pad(lisbonTime.getMonth()+1)}-${pad(lisbonTime.getDate())} ${pad(lisbonTime.getHours())}:${pad(lisbonTime.getMinutes())}:${pad(lisbonTime.getSeconds())}`;
 }
 
+
 function applyLangTexts(lang) {
   const t = translations[lang] || translations["en"];
   document.getElementById("page-title").textContent = t.title;
@@ -253,7 +254,7 @@ function sendToBaserow(tipo, valor, localizacao = "N/A") {
   const data = {
     tipo: tipo,
     valor: valor,
-    date: formatDate(),
+    date: new Date().toISOString(),
     localizacao: localizacao,
     dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Telemóvel" : "Computador",
     os: navigator.platform,
@@ -288,7 +289,7 @@ function getVisitCount() {
 
 getVisitCount();
 
-// Registar visita
+// Registar visita (uma vez por sessão)
 if (!sessionStorage.getItem("visited")) {
   sessionStorage.setItem("visited", "1");
   fetch("https://ipapi.co/json/")
@@ -331,7 +332,6 @@ document.querySelectorAll("#stars-container span").forEach(star => {
   });
 });
 
-// Aplicar estrelas já votadas
 updateStarColors(parseInt(localStorage.getItem("stars") || 0));
 </script>
 
