@@ -62,20 +62,23 @@
       }
     }
 
-    .image-container {
+    .content-container {
       flex-grow: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      font-size: 1rem;
+      line-height: 1.6;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
     }
 
-    .image-container img {
-      max-width: 90%;
-      max-height: 80vh;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      background: #fff;
+    @media (max-width: 600px) {
+      .content-container {
+        font-size: 0.95rem;
+        padding: 16px;
+      }
     }
   </style>
 </head>
@@ -86,8 +89,11 @@
     <h1 class="titulo" id="main-title">Gerber</h1>
   </header>
 
-  <div class="image-container">
-    <img src="gerber.png" alt="Gerber" />
+  <div class="content-container" id="project-summary">
+    <h2>Resumo do Projeto</h2>
+    <p>
+      Este projeto apresenta um sistema de controlo sem fios para portões automáticos, composto por dois módulos: Módulo Motor e Módulo Porta. A comunicação é feita por rádio a 868 MHz com encriptação AES-128, CRC e filtragem por UID. O Módulo Porta deteta o estado da porta com um sensor Reed Switch e comunica via rádio com consumo ultrabaixo. Recorrendo ao modo LPAWUR (escuta autónoma de baixo consumo) e ao RTC (relógio em tempo real), acorda periodicamente para enviar heartbeat e verificar o estado da bateria, com autonomia até 1 ano com 2 pilhas AA. O sistema inclui watchdog (IWDG) para deteção de bloqueios, emparelhamento seguro e firmware modular com deteção automática de modo Porta/Motor. Os testes validaram comunicação fiável até 8 metros, mesmo com obstáculos, e resposta eficiente a falhas ou eventos.
+    </p>
   </div>
 
   <script>
@@ -99,10 +105,12 @@
       document.getElementById('back-button').textContent = '⬅ Voltar';
       document.getElementById('page-title').textContent = 'Gerber';
       document.getElementById('main-title').textContent = 'Gerber';
+      document.querySelector('h2').textContent = 'Resumo do Projeto';
     } else {
       document.getElementById('back-button').textContent = '⬅ Back';
       document.getElementById('page-title').textContent = 'Gerber';
       document.getElementById('main-title').textContent = 'Gerber';
+      document.querySelector('h2').textContent = 'Project Summary';
     }
   </script>
 
