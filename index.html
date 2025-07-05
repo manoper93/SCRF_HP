@@ -207,12 +207,52 @@ const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const stars = document.querySelectorAll('.star');
 const lang = localStorage.getItem('lang') || 'en';
+let userRating = null;
+let userIP = null;
+
+async function getPublicIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const json = await res.json();
+    return json.ip;
+  } catch {
+    return 'unknown';
+  }
+}
+
+function getDeviceModel() {
+  return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
+}
+
+function getOS() {
+  const ua = navigator.userAgent;
+  if (/Android/.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+  if (/Win/.test(ua)) return 'Windows';
+  if (/Mac/.test(ua)) return 'Mac OS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Desconhecido';
+}
+
+function getBrowser() {
+  const ua = navigator.userAgent;
+  if (/Edg\//.test(ua)) return "Edge";
+  if (/OPR\//.test(ua)) return "Opera";
+  if (/Chrome\//.test(ua)) return "Chrome";
+  if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
+  if (/Firefox\//.test(ua)) return "Firefox";
+  return "Desconhecido";
+}
+
+function getDeviceKey(ip) {
+  return `rating_${ip || 'local'}_${getDeviceModel()}_${getOS()}_${getBrowser()}`;
+}
 
 function formatDateLisbon() {
   const now = new Date();
   const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
   const pad = n => n.toString().padStart(2, '0');
-  return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth() + 1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
+  return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
 }
 
 async function getLocation() {
@@ -240,42 +280,12 @@ async function getLocation() {
   });
 }
 
-function getDeviceModel() {
-  return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
-}
-
-function getOS() {
-  const ua = navigator.userAgent;
-  if (/Android/.test(ua)) return 'Android';
-  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
-  if (/Win/.test(ua)) return 'Windows';
-  if (/Mac/.test(ua)) return 'Mac OS';
-  if (/Linux/.test(ua)) return 'Linux';
-  return 'Desconhecido';
-}
-
-function getBrowser() {
-  const ua = navigator.userAgent;
-  if (/Edg\//.test(ua)) return "Edge";
-  if (/OPR\//.test(ua)) return "Opera";
-  if (/Chrome\//.test(ua)) return "Chrome";
-  if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
-  if (/Firefox\//.test(ua)) return "Firefox";
-  return "Desconhecido";
-}
-
-function getDeviceKey() {
-  return `${getDeviceModel()}_${getOS()}_${getBrowser()}`;
-}
-
-const deviceKey = `userRating_${getDeviceKey()}`;
-let userRating = localStorage.getItem(deviceKey);
-
 async function sendToBaserow(tipo, valor) {
   const localizacao = await getLocation();
   const data = {
     tipo,
     valor,
+    ip: userIP,
     date: formatDateLisbon(),
     localizacao,
     dispositivo: getDeviceModel(),
@@ -292,43 +302,72 @@ async function sendToBaserow(tipo, valor) {
   });
 }
 
-async function loadData() {
-  console.log("📡 A carregar dados da API com regras de visita e votos...");
+function updateStars(n) {
+  stars.forEach(s => {
+    s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
+  });
+}
 
+async function sendVote(n) {
+  const deviceKey = getDeviceKey(userIP);
+  const stored = localStorage.getItem(deviceKey);
+
+  if (stored && parseInt(stored) === n) {
+    alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
+    return;
+  }
+
+  const ask = stored
+    ? (lang === 'pt-PT'
+        ? `Votou ${stored} estrela(s). Quer alterar para ${n}?`
+        : `You voted ${stored} star(s). Change to ${n}?`)
+    : (lang === 'pt-PT'
+        ? `Quer votar ${n} estrela(s)?`
+        : `Do you want to vote ${n} star(s)?`);
+  if (!confirm(ask)) return;
+
+  if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1);
+  await sendToBaserow(n, 1);
+  localStorage.setItem(deviceKey, n);
+  userRating = n;
+  updateStars(n);
+  await loadData();
+}
+
+stars.forEach(s => {
+  s.addEventListener('click', () => {
+    sendVote(parseInt(s.dataset.value));
+  });
+});
+
+async function incrementVisit() {
+  if (!sessionStorage.getItem('visited')) {
+    await sendToBaserow('visita', 1);
+    sessionStorage.setItem('visited', 'true');
+  }
+}
+
+async function loadData() {
   try {
     const limit = 500;
-    const maxPaginas = 1;
     const campoTipo = 'tipo';
     const campoValor = 'valor';
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
-    const requests = Array.from({ length: maxPaginas }, (_, i) => {
-      const offset = i * limit;
-      const url = `${API_URL}&limit=${limit}&offset=${offset}`;
-      console.log(`➡️ GET página ${i + 1}:`, url);
-      return fetch(url, {
-        headers: { 'Authorization': API_TOKEN }
-      }).then(async res => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Erro página ${i + 1} (${res.status}): ${text}`);
-        }
-        return res.json();
-      });
+    const res = await fetch(`${API_URL}&limit=${limit}&offset=0`, {
+      headers: { 'Authorization': API_TOKEN }
     });
+    const json = await res.json();
+    all = all.concat(json.results);
 
-    const results = await Promise.allSettled(requests);
-    for (const r of results) {
-      if (r.status === 'fulfilled' && r.value.results?.length) {
-        all = all.concat(r.value.results);
-      } else if (r.status === 'rejected') {
-        console.warn("⚠️ Falha num dos pedidos:", r.reason);
-      }
-    }
+    const visitas = all.filter(r =>
+      r[campoTipo] === 'visita' && r[campoValor] === '1'
+    );
 
-    const visitas = all.filter(r => r[campoTipo] === 'visita' && r[campoValor] === '1');
-    const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]) && /^-?1$/.test(r[campoValor]));
+    const votos = all.filter(r =>
+      /^[1-5]$/.test(r[campoTipo]) && /^-?1$/.test(r[campoValor])
+    );
 
     votos.forEach(v => {
       const estrela = parseInt(v[campoTipo]);
@@ -349,55 +388,12 @@ async function loadData() {
     }
     ratingDisplay.innerHTML = html;
 
-    console.log(`✅ ${all.length} registos processados com sucesso.`);
   } catch (err) {
-    console.error("🔥 Erro geral no loadData:", err);
+    console.error("Erro no loadData:", err);
     visitDisplay.textContent = 'Erro';
-    ratingDisplay.innerHTML = `<div style="color:red;">Erro de rede ou JSON<br>${err.message || err}</div>`;
+    ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
   }
 }
-
-async function incrementVisit() {
-  if (!sessionStorage.getItem('visited')) {
-    await sendToBaserow('visita', 1);
-    sessionStorage.setItem('visited', 'true');
-  }
-}
-
-async function sendVote(n) {
-  if (userRating && userRating == n) {
-    alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
-    return;
-  }
-
-  const ask = userRating
-    ? (lang === 'pt-PT'
-        ? `Votou ${userRating} estrela(s). Quer alterar para ${n}?`
-        : `You voted ${userRating} star(s). Change to ${n}?`)
-    : (lang === 'pt-PT'
-        ? `Quer votar ${n} estrela(s)?`
-        : `Do you want to vote ${n} star(s)?`);
-  if (!confirm(ask)) return;
-
-  if (userRating && userRating !== n) await sendToBaserow(userRating, -1);
-  await sendToBaserow(n, 1);
-  localStorage.setItem(deviceKey, n);
-  userRating = n;
-  updateStars(n);
-  await loadData();
-}
-
-function updateStars(n) {
-  stars.forEach(s => {
-    s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
-  });
-}
-
-stars.forEach(s => {
-  s.addEventListener('click', () => {
-    sendVote(parseInt(s.dataset.value));
-  });
-});
 
 function toggleLang() {
   const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
@@ -440,13 +436,17 @@ function applyLangTexts(lang) {
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
 
-applyLangTexts(savedLang);
-
-if (userRating !== null && !isNaN(userRating)) {
-  updateStars(Number(userRating));
-}
-
-incrementVisit().then(loadData);
+(async () => {
+  userIP = await getPublicIP();
+  const deviceKey = getDeviceKey(userIP);
+  userRating = localStorage.getItem(deviceKey);
+  if (userRating !== null && !isNaN(userRating)) {
+    updateStars(Number(userRating));
+  }
+  applyLangTexts(savedLang);
+  await incrementVisit();
+  await loadData();
+})();
 </script>
 
 </body>
