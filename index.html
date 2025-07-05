@@ -207,10 +207,21 @@ const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const stars = document.querySelectorAll('.star');
 const lang = localStorage.getItem('lang') || 'en';
+
 let userRating = null;
 let userIP = null;
+const USER_UUID = getOrCreateUUID();
 
-// 🧠 Utilitários
+// 🔐 Gera UUID único por dispositivo
+function getOrCreateUUID() {
+  let uuid = localStorage.getItem('uuid');
+  if (!uuid) {
+    uuid = crypto.randomUUID();
+    localStorage.setItem('uuid', uuid);
+  }
+  return uuid;
+}
+
 function getDeviceModel() {
   return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 }
@@ -231,9 +242,6 @@ function getBrowser() {
   if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
   if (/Firefox\//.test(ua)) return "Firefox";
   return "Desconhecido";
-}
-function getDeviceKey(ip = 'anon') {
-  return `rating_${ip}_${getDeviceModel()}_${getOS()}_${getBrowser()}`;
 }
 async function getPublicIP() {
   try {
@@ -279,6 +287,7 @@ async function sendToBaserow(tipo, valor) {
   const data = {
     tipo,
     valor,
+    uuid: USER_UUID,
     ip: userIP || 'unknown',
     date: formatDateLisbon(),
     localizacao,
@@ -296,19 +305,16 @@ async function sendToBaserow(tipo, valor) {
   });
 }
 
-// ⭐ Atualizar estrelas
 function updateStars(n) {
   stars.forEach(s => {
     s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
   });
 }
 
-// ⭐ Enviar voto
 async function sendVote(n) {
-  const keyAnon = getDeviceKey(); // sem IP
-  const keyWithIP = getDeviceKey(userIP || '');
+  const key = `rating_${USER_UUID}`;
+  const stored = localStorage.getItem(key);
 
-  const stored = localStorage.getItem(keyAnon);
   if (stored && parseInt(stored) === n) {
     alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
     return;
@@ -326,22 +332,18 @@ async function sendVote(n) {
   if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1);
   await sendToBaserow(n, 1);
 
-  localStorage.setItem(keyAnon, n);         // para mostrar imediatamente
-  if (userIP) localStorage.setItem(keyWithIP, n); // para controle por IP
-
+  localStorage.setItem(key, n);
   userRating = n;
   updateStars(n);
   await loadData();
 }
 
-// 🎯 Eventos das estrelas
 stars.forEach(s => {
   s.addEventListener('click', () => {
     sendVote(parseInt(s.dataset.value));
   });
 });
 
-// 👣 Visitas
 async function incrementVisit() {
   if (!sessionStorage.getItem('visited')) {
     await sendToBaserow('visita', 1);
@@ -349,7 +351,6 @@ async function incrementVisit() {
   }
 }
 
-// 📊 Estatísticas
 async function loadData() {
   try {
     const res = await fetch(`${API_URL}&limit=500&offset=0`, {
@@ -386,7 +387,6 @@ async function loadData() {
   }
 }
 
-// 🌍 Idioma
 function toggleLang() {
   const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
   localStorage.setItem('lang', newLang);
@@ -424,23 +424,20 @@ function applyLangTexts(lang) {
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
 
-// 🚀 Início
 (function init() {
   document.documentElement.lang = lang;
   applyLangTexts(lang);
 
-  // ⭐ Mostrar estrela local de imediato
-  const keyAnon = getDeviceKey(); // sem IP
-  userRating = localStorage.getItem(keyAnon);
+  // Mostrar estrela baseada no UUID
+  const key = `rating_${USER_UUID}`;
+  userRating = localStorage.getItem(key);
   if (userRating !== null && !isNaN(userRating)) {
     updateStars(Number(userRating));
   }
 
-  // ⚙️ Correr serviços
   loadData();
   incrementVisit();
 
-  // 🌐 Obter IP depois
   getPublicIP().then(ip => {
     userIP = ip;
   });
