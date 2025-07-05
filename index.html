@@ -176,6 +176,10 @@
 
     <h2 id="subtitle2">View</h2>
     <div class="buttons">
+      <a href="resumo.html"><button class="btn" id="resumo-btn">📝 Resumo do Projeto</button></a>
+    </div>
+
+    <div class="buttons">
       <a href="esquematico.html"><button class="btn" id="schematic-btn">📐 Schematic</button></a>
     </div>
 
@@ -383,6 +387,7 @@ function applyLangTexts(lang) {
       subtitle2: 'Visualizar',
       motor: '⚙️ Módulo Motor',
       door: '🚪 Módulo Porta',
+      resumo: '📝 Resumo do Projeto',
       schematic: '📐 Esquemático',
       gerber: '📐 Gerber'
     },
@@ -392,6 +397,7 @@ function applyLangTexts(lang) {
       subtitle2: 'View',
       motor: '⚙️ Motor Module',
       door: '🚪 Door Module',
+      resumo: '📝 Project Summary',
       schematic: '📐 Schematic',
       gerber: '📐 Gerber'
     }
@@ -403,6 +409,7 @@ function applyLangTexts(lang) {
   document.getElementById('subtitle2').textContent = t.subtitle2;
   document.getElementById('motor-btn').textContent = t.motor;
   document.getElementById('door-btn').textContent = t.door;
+  document.getElementById('resumo-btn').textContent = t.resumo;
   document.getElementById('schematic-btn').textContent = t.schematic;
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
