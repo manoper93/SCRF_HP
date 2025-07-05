@@ -209,14 +209,21 @@ const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const lang = localStorage.getItem('lang') || 'en';
 
-let userRating = localStorage.getItem(`rating_${USER_UUID}`);
-let userIP = '';
-let userLocation = '';
-const userDevice = getDeviceModel();
-const userOS = getOS();
-const userBrowser = getBrowser();
+let userIP = '', userLocation = '';
+const userDevice = /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
+const userOS = /Android/.test(navigator.userAgent) ? 'Android' :
+               /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iOS' :
+               /Win/.test(navigator.userAgent) ? 'Windows' :
+               /Mac/.test(navigator.userAgent) ? 'Mac OS' :
+               /Linux/.test(navigator.userAgent) ? 'Linux' : 'Desconhecido';
+const userBrowser = /Edg\//.test(navigator.userAgent) ? "Edge" :
+                    /OPR\//.test(navigator.userAgent) ? "Opera" :
+                    /Chrome\//.test(navigator.userAgent) ? "Chrome" :
+                    /Safari\//.test(navigator.userAgent) && !/Chrome\//.test(navigator.userAgent) ? "Safari" :
+                    /Firefox\//.test(navigator.userAgent) ? "Firefox" : "Desconhecido";
 
-// 🔐 UUID único persistente
+let userRating = localStorage.getItem(`rating_${USER_UUID}`);
+
 function getOrCreateUUID() {
   let uuid = localStorage.getItem('uuid');
   if (!uuid) {
@@ -226,30 +233,6 @@ function getOrCreateUUID() {
   return uuid;
 }
 
-// 📱 Info do dispositivo
-function getDeviceModel() {
-  return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
-}
-function getOS() {
-  const ua = navigator.userAgent;
-  if (/Android/.test(ua)) return 'Android';
-  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
-  if (/Win/.test(ua)) return 'Windows';
-  if (/Mac/.test(ua)) return 'Mac OS';
-  if (/Linux/.test(ua)) return 'Linux';
-  return 'Desconhecido';
-}
-function getBrowser() {
-  const ua = navigator.userAgent;
-  if (/Edg\//.test(ua)) return "Edge";
-  if (/OPR\//.test(ua)) return "Opera";
-  if (/Chrome\//.test(ua)) return "Chrome";
-  if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
-  if (/Firefox\//.test(ua)) return "Firefox";
-  return "Desconhecido";
-}
-
-// 🌐 IP
 async function getPublicIP() {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -260,14 +243,12 @@ async function getPublicIP() {
   }
 }
 
-// 📍 Localização
 async function getLocationOnce() {
   return new Promise(resolve => {
     if (!navigator.geolocation) {
       userLocation = 'não suportada';
       return resolve();
     }
-
     navigator.geolocation.getCurrentPosition(async pos => {
       const { latitude, longitude } = pos.coords;
       try {
@@ -288,7 +269,6 @@ async function getLocationOnce() {
   });
 }
 
-// 🕓 Data formatada
 function formatDateLisbon() {
   const now = new Date();
   const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
@@ -296,11 +276,9 @@ function formatDateLisbon() {
   return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
 }
 
-// 📤 Enviar para Baserow com dados já guardados
 async function sendToBaserow(tipo, valor) {
   const data = {
-    tipo,
-    valor,
+    tipo, valor,
     uuid: USER_UUID,
     ip: userIP,
     date: formatDateLisbon(),
@@ -309,25 +287,19 @@ async function sendToBaserow(tipo, valor) {
     os: userOS,
     browser: userBrowser
   };
-
   await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Authorization': API_TOKEN,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Authorization': API_TOKEN, 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
 }
 
-// ⭐ Atualizar estrelas
 function updateStars(n) {
   stars.forEach(s => {
     s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
   });
 }
 
-// ⭐ Votar
 async function sendVote(n) {
   const key = `rating_${USER_UUID}`;
   const stored = localStorage.getItem(key);
@@ -350,14 +322,13 @@ async function sendVote(n) {
   localStorage.setItem(key, n);
   userRating = n;
   updateStars(n);
-  await new Promise(r => setTimeout(r, 1500)); // buffer
+  await new Promise(r => setTimeout(r, 1000));
   await loadData();
 }
 
-// 📊 Carregar dados
 async function loadData() {
   try {
-    const res = await fetch(`${API_URL}&limit=5000`, {
+    const res = await fetch(`${API_URL}&limit=500`, {
       headers: { 'Authorization': API_TOKEN }
     });
     const json = await res.json();
@@ -365,7 +336,6 @@ async function loadData() {
 
     const visitas = all.filter(r => r.tipo === 'visita' && r.valor === '1');
     const votos = all.filter(r => /^[1-5]$/.test(r.tipo) && /^-?1$/.test(r.valor));
-
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
       const estrela = parseInt(v.tipo), valor = parseInt(v.valor);
@@ -387,7 +357,6 @@ async function loadData() {
   }
 }
 
-// 👣 Visita única por sessão
 async function incrementVisit() {
   if (!sessionStorage.getItem('visited')) {
     await sendToBaserow('visita', 1);
@@ -395,14 +364,12 @@ async function incrementVisit() {
   }
 }
 
-// 🌍 Alternar idioma
 function toggleLang() {
   const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
   localStorage.setItem('lang', newLang);
   location.reload();
 }
 
-// 🚀 Início rápido
 (async function init() {
   document.documentElement.lang = lang;
 
@@ -414,17 +381,11 @@ function toggleLang() {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
 
-  await Promise.all([
-    getPublicIP(),
-    getLocationOnce()
-  ]);
-
+  await Promise.all([getPublicIP(), getLocationOnce()]);
   await incrementVisit();
   loadData();
 })();
-
 </script>
-
   
 </body>
 </html>
