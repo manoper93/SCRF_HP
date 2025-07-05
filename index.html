@@ -287,17 +287,17 @@ async function sendToBaserow(tipo, valor) {
 }
 
 async function loadData() {
-  console.log("📡 A carregar dados da API com lógica de votos e visitas refinada...");
+  console.log("📡 A carregar dados da API com regras de visita e votos...");
 
   try {
     const limit = 500;
     const maxPaginas = 10;
-    const campoTipo = 'tipo';    // ← usar nomes com user_field_names=true
-    const campoValor = 'valor';
+    const campoTipo = 'tipo';    // usar nomes reais no Baserow
+    const campoValor = 'valor';  // também com nomes reais
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
-    // Criar fetches paralelos
+    // Criar pedidos paralelos
     const requests = Array.from({ length: maxPaginas }, (_, i) => {
       const offset = i * limit;
       const url = `${API_URL}&limit=${limit}&offset=${offset}`;
@@ -323,23 +323,25 @@ async function loadData() {
       }
     }
 
-    // Contar apenas visitas válidas (tipo === 'visita' && valor === '1')
-    const visitas = all.filter(r => r[campoTipo] === 'visita' && r[campoValor] === '1');
+    // ✅ Filtrar visitas: tipo === 'visita' e valor === '1'
+    const visitas = all.filter(r =>
+      r[campoTipo] === 'visita' && r[campoValor] === '1'
+    );
 
-    // Filtrar votos válidos: tipo de 1 a 5 e valor ±1
+    // ✅ Votos: tipo de 1 a 5, valor === 1 ou -1
     const votos = all.filter(r =>
       /^[1-5]$/.test(r[campoTipo]) && /^-?1$/.test(r[campoValor])
     );
 
     votos.forEach(v => {
       const estrela = parseInt(v[campoTipo]);
-      const valor = parseInt(v[campoValor]) || 0;
-      if (estrela >= 1 && estrela <= 5) {
+      const valor = parseInt(v[campoValor]);
+      if (estrela >= 1 && estrela <= 5 && (valor === 1 || valor === -1)) {
         contagens[estrela] += valor;
       }
     });
 
-    // Atualizar interface
+    // Atualizar UI
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
