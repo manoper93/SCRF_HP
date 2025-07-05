@@ -358,10 +358,15 @@ async function loadData() {
 }
 
 async function incrementVisit() {
-  if (!sessionStorage.getItem('visited')) {
-    await sendToBaserow('visita', 1);
-    sessionStorage.setItem('visited', 'true');
+  if (sessionStorage.getItem('visited')) return;
+
+  // Espera até IP e localização estarem preenchidos
+  while (!userIP || !userLocation) {
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
+
+  await sendToBaserow('visita', 1);
+  sessionStorage.setItem('visited', 'true');
 }
 
 function toggleLang() {
