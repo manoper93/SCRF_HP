@@ -290,8 +290,8 @@ async function loadData() {
   console.log("📡 A carregar dados da API:", API_URL);
   try {
     let offset = 0;
-    const limit = 200;
-    const maxPaginas = 500;
+    const limit = 500;
+    const maxPaginas = 10;
     let all = [];
 
     for (let pagina = 0; pagina < maxPaginas; pagina++) {
