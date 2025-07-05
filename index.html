@@ -210,8 +210,8 @@ const ratingDisplay = document.getElementById('rating-counts');
 const lang = localStorage.getItem('lang') || 'en';
 
 let userRating = localStorage.getItem(`rating_${USER_UUID}`);
-let userIP = 'unknown';
-let userLocation = 'desconhecido';
+let userIP = getPublicIP();
+let userLocation = getLocationOnce();
 const userDevice = getDeviceModel();
 const userOS = getOS();
 const userBrowser = getBrowser();
@@ -295,15 +295,15 @@ function formatDateLisbon() {
 // 📤 Enviar para Baserow com dados já guardados
 async function sendToBaserow(tipo, valor) {
   const data = {
+    ip: userIP,
     tipo,
     valor,
-    uuid: USER_UUID,
-    ip: userIP,
     date: formatDateLisbon(),
     localizacao: userLocation,
     dispositivo: userDevice,
     os: userOS,
-    browser: userBrowser
+    browser: userBrowser,
+    uuid: USER_UUID
   };
 
   await fetch(API_URL, {
@@ -388,9 +388,6 @@ async function incrementVisit() {
   if (!sessionStorage.getItem('visited')) {
     await sendToBaserow('visita', 1);
     sessionStorage.setItem('visited', 'true');
-    if (userLocation === 'desconhecido') {
-      await getLocationOnce();
-    }
   }
 }
 
