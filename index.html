@@ -353,7 +353,7 @@ async function sendVote(n) {
 // 📊 Carregar dados
 async function loadData() {
   try {
-    const res = await fetch(`${API_URL}&limit=500`, {
+    const res = await fetch(`${API_URL}&limit=5000`, {
       headers: { 'Authorization': API_TOKEN }
     });
     const json = await res.json();
