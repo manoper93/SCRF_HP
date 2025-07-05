@@ -287,32 +287,49 @@ async function sendToBaserow(tipo, valor) {
 }
 
 async function loadData() {
-  let total = 0, offset = 0, limit = 200, all = [];
-  while (true) {
-    const res = await fetch(`${API_URL}&limit=${limit}&offset=${offset}`, {
-      headers: { 'Authorization': API_TOKEN }
-    });
-    const json = await res.json();
-    all = all.concat(json.results);
-    if (!json.next) break;
-    offset += limit;
+  try {
+    let total = 0, offset = 0, limit = 200, all = [];
+
+    while (true) {
+      const res = await fetch(`${API_URL}&limit=${limit}&offset=${offset}`, {
+        headers: { 'Authorization': API_TOKEN }
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        visitDisplay.textContent = 'Erro';
+        ratingDisplay.innerHTML = `<div style="color:red;">GET failed: ${res.status}<br>${errorText}</div>`;
+        console.error("GET error:", res.status, errorText);
+        return;
+      }
+
+      const json = await res.json();
+      all = all.concat(json.results);
+      if (!json.next) break;
+      offset += limit;
+    }
+
+    const visitas = all.filter(r => r.tipo === 'visita');
+    const votos = all.filter(r => /^[1-5]$/.test(r.tipo));
+    const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    votos.forEach(v => contagens[v.tipo] += parseInt(v.valor || 0));
+
+    const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
+    visitDisplay.textContent = visitas.length;
+    document.getElementById('visit-label').firstChild.textContent = visitLabel;
+
+    let html = '';
+    for (let i = 5; i >= 1; i--) {
+      const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
+      html += `<div>${lbl}: ${contagens[i]}</div>`;
+    }
+    ratingDisplay.innerHTML = html;
+
+  } catch (err) {
+    console.error("Erro geral no loadData:", err);
+    visitDisplay.textContent = 'Erro';
+    ratingDisplay.innerHTML = `<div style="color:red;">Erro de rede ou JSON<br>${err}</div>`;
   }
-
-  const visitas = all.filter(r => r.tipo === 'visita');
-  const votos = all.filter(r => /^[1-5]$/.test(r.tipo));
-  const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  votos.forEach(v => contagens[v.tipo] += parseInt(v.valor || 0));
-
-  const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
-  visitDisplay.textContent = visitas.length;
-  document.getElementById('visit-label').firstChild.textContent = visitLabel;
-
-  let html = '';
-  for (let i = 5; i >= 1; i--) {
-    const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
-    html += `<div>${lbl}: ${contagens[i]}</div>`;
-  }
-  ratingDisplay.innerHTML = html;
 }
 
 async function incrementVisit() {
