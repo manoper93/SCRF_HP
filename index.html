@@ -201,7 +201,7 @@
 </div>
 
 <script>
-const API_URL = 'https://api.baserow.io/api/database/rows/table/587949/';
+const API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
 const API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
 const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
@@ -287,15 +287,16 @@ async function sendToBaserow(tipo, valor) {
 }
 
 async function loadData() {
-  console.log("📡 A carregar dados da API (sem user_field_names)...");
+  console.log("📡 A carregar dados da API:", API_URL);
   try {
     const limit = 500;
     const maxPaginas = 10;
-    const campoTipo = 'field_4750715';   // ← substitui pelo campo correto
-    const campoValor = 'field_4750716';  // ← substitui pelo campo correto
+    const campoTipo = 'tipo';
+    const campoValor = 'valor';
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
+    // Criar todas as promises de fetch (até maxPaginas)
     const requests = Array.from({ length: maxPaginas }, (_, i) => {
       const offset = i * limit;
       const url = `${API_URL}&limit=${limit}&offset=${offset}`;
@@ -312,8 +313,10 @@ async function loadData() {
       });
     });
 
+    // Executar os fetches em paralelo
     const results = await Promise.allSettled(requests);
 
+    // Processar resultados válidos
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value.results?.length) {
         all = all.concat(r.value.results);
@@ -322,6 +325,7 @@ async function loadData() {
       }
     }
 
+    // Processamento de visitas e votos
     const visitas = all.filter(r => r[campoTipo] === 'visita');
     const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]));
 
@@ -333,6 +337,7 @@ async function loadData() {
       }
     });
 
+    // Atualizar UI
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
