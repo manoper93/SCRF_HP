@@ -206,11 +206,41 @@ const API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
 const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const stars = document.querySelectorAll('.star');
+let userRating = localStorage.getItem('userRating');
 const lang = localStorage.getItem('lang') || 'en';
-let userRating = null;
-let userIP = null;
 
-// Funções utilitárias
+function formatDateLisbon() {
+  const now = new Date();
+  const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
+  const pad = n => n.toString().padStart(2, '0');
+  return ${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())};
+}
+
+async function getLocation() {
+  return new Promise((resolve) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        try {
+          const response = await fetch(https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon});
+          const data = await response.json();
+          const city = data.address.city || data.address.town || data.address.village || '';
+          const region = data.address.state || '';
+          const country = data.address.country || '';
+          resolve(${city}, ${region}, ${country});
+        } catch (e) {
+          resolve(lang === 'pt-PT' ? 'Localização exata indisponível' : 'Exact location unavailable');
+        }
+      }, () => {
+        resolve(lang === 'pt-PT' ? 'Permissão negada' : 'Permission denied');
+      });
+    } else {
+      resolve(lang === 'pt-PT' ? 'Geolocalização não suportada' : 'Geolocation not supported');
+    }
+  });
+}
+
 function getDeviceModel() {
   return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 }
@@ -235,58 +265,11 @@ function getBrowser() {
   return "Desconhecido";
 }
 
-function getDeviceKey(ip = '') {
-  return `rating_${ip}_${getDeviceModel()}_${getOS()}_${getBrowser()}`;
-}
-
-async function getPublicIP() {
-  try {
-    const res = await fetch('https://api.ipify.org?format=json');
-    const json = await res.json();
-    return json.ip;
-  } catch {
-    return 'unknown';
-  }
-}
-
-function formatDateLisbon() {
-  const now = new Date();
-  const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
-  const pad = n => n.toString().padStart(2, '0');
-  return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
-}
-
-async function getLocation() {
-  return new Promise((resolve) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-          const data = await response.json();
-          const city = data.address.city || data.address.town || data.address.village || '';
-          const region = data.address.state || '';
-          const country = data.address.country || '';
-          resolve(`${city}, ${region}, ${country}`);
-        } catch (e) {
-          resolve(lang === 'pt-PT' ? 'Localização exata indisponível' : 'Exact location unavailable');
-        }
-      }, () => {
-        resolve(lang === 'pt-PT' ? 'Permissão negada' : 'Permission denied');
-      });
-    } else {
-      resolve(lang === 'pt-PT' ? 'Geolocalização não suportada' : 'Geolocation not supported');
-    }
-  });
-}
-
 async function sendToBaserow(tipo, valor) {
   const localizacao = await getLocation();
   const data = {
     tipo,
     valor,
-    ip: userIP || 'unknown',
     date: formatDateLisbon(),
     localizacao,
     dispositivo: getDeviceModel(),
@@ -303,69 +286,49 @@ async function sendToBaserow(tipo, valor) {
   });
 }
 
-function updateStars(n) {
-  stars.forEach(s => {
-    s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
-  });
-}
-
-async function sendVote(n) {
-  const deviceKey = getDeviceKey(userIP || '');
-  const stored = localStorage.getItem(deviceKey);
-
-  if (stored && parseInt(stored) === n) {
-    alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
-    return;
-  }
-
-  const ask = stored
-    ? (lang === 'pt-PT'
-        ? `Votou ${stored} estrela(s). Quer alterar para ${n}?`
-        : `You voted ${stored} star(s). Change to ${n}?`)
-    : (lang === 'pt-PT'
-        ? `Quer votar ${n} estrela(s)?`
-        : `Do you want to vote ${n} star(s)?`);
-  if (!confirm(ask)) return;
-
-  if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1);
-  await sendToBaserow(n, 1);
-  localStorage.setItem(deviceKey, n);
-  userRating = n;
-  updateStars(n);
-  await loadData();
-}
-
-stars.forEach(s => {
-  s.addEventListener('click', () => {
-    sendVote(parseInt(s.dataset.value));
-  });
-});
-
-async function incrementVisit() {
-  if (!sessionStorage.getItem('visited')) {
-    await sendToBaserow('visita', 1);
-    sessionStorage.setItem('visited', 'true');
-  }
-}
-
 async function loadData() {
+  console.log("📡 A carregar dados da API com regras de visita e votos...");
+
   try {
     const limit = 500;
-    const campoTipo = 'tipo';
-    const campoValor = 'valor';
+    const maxPaginas = 1;
+    const campoTipo = 'tipo';    // usar nomes reais no Baserow
+    const campoValor = 'valor';  // também com nomes reais
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
-    const res = await fetch(`${API_URL}&limit=${limit}&offset=0`, {
-      headers: { 'Authorization': API_TOKEN }
+    // Criar pedidos paralelos
+    const requests = Array.from({ length: maxPaginas }, (_, i) => {
+      const offset = i * limit;
+      const url = ${API_URL}&limit=${limit}&offset=${offset};
+      console.log(➡️ GET página ${i + 1}:, url);
+      return fetch(url, {
+        headers: { 'Authorization': API_TOKEN }
+      })
+      .then(async res => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(Erro página ${i + 1} (${res.status}): ${text});
+        }
+        return res.json();
+      });
     });
-    const json = await res.json();
-    all = all.concat(json.results);
 
+    const results = await Promise.allSettled(requests);
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value.results?.length) {
+        all = all.concat(r.value.results);
+      } else if (r.status === 'rejected') {
+        console.warn("⚠️ Falha num dos pedidos:", r.reason);
+      }
+    }
+
+    // ✅ Filtrar visitas: tipo === 'visita' e valor === '1'
     const visitas = all.filter(r =>
       r[campoTipo] === 'visita' && r[campoValor] === '1'
     );
 
+    // ✅ Votos: tipo de 1 a 5, valor === 1 ou -1
     const votos = all.filter(r =>
       /^[1-5]$/.test(r[campoTipo]) && /^-?1$/.test(r[campoValor])
     );
@@ -378,29 +341,77 @@ async function loadData() {
       }
     });
 
+    // Atualizar UI
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
 
     let html = '';
     for (let i = 5; i >= 1; i--) {
-      const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
-      html += `<div>${lbl}: ${contagens[i]}</div>`;
+      const lbl = lang === 'pt-PT' ? ${i} estrela(s) : ${i} star(s);
+      html += <div>${lbl}: ${contagens[i]}</div>;
     }
     ratingDisplay.innerHTML = html;
 
+    console.log(✅ ${all.length} registos processados com sucesso.);
+
   } catch (err) {
-    console.error("Erro no loadData:", err);
+    console.error("🔥 Erro geral no loadData:", err);
     visitDisplay.textContent = 'Erro';
-    ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
+    ratingDisplay.innerHTML = <div style="color:red;">Erro de rede ou JSON<br>${err.message || err}</div>;
   }
 }
+  
+async function incrementVisit() {
+  if (!sessionStorage.getItem('visited')) {
+    await sendToBaserow('visita', 1);
+    sessionStorage.setItem('visited', 'true');
+  }
+}
+
+async function sendVote(n) {
+  if (userRating && userRating == n) {
+    alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
+    return;
+  }
+
+  const ask = userRating
+    ? (lang === 'pt-PT'
+      ? Votou ${userRating} estrela(s). Quer alterar para ${n}?
+      : You voted ${userRating} star(s). Change to ${n}?)
+    : (lang === 'pt-PT'
+      ? Quer votar ${n} estrela(s)?
+      : Do you want to vote ${n} star(s)?);
+  if (!confirm(ask)) return;
+
+  if (userRating && userRating !== n) await sendToBaserow(userRating, -1);
+  await sendToBaserow(n, 1);
+  localStorage.setItem('userRating', n);
+  userRating = n;
+  updateStars(n);
+  await loadData();
+}
+
+function updateStars(n) {
+  stars.forEach(s => {
+    s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
+  });
+}
+
+stars.forEach(s => {
+  s.addEventListener('click', () => {
+    sendVote(parseInt(s.dataset.value));
+  });
+});
 
 function toggleLang() {
   const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
   localStorage.setItem('lang', newLang);
   location.reload();
 }
+
+const savedLang = localStorage.getItem('lang') || 'en';
+document.documentElement.lang = savedLang;
 
 function applyLangTexts(lang) {
   const texts = {
@@ -434,27 +445,10 @@ function applyLangTexts(lang) {
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
 
-// ⚡️ INICIALIZAÇÃO RÁPIDA
-(function init() {
-  document.documentElement.lang = lang;
-  applyLangTexts(lang);
-
-  // Mostra estrela local instantaneamente
-  const deviceKey = getDeviceKey(); // sem IP
-  userRating = localStorage.getItem(deviceKey);
-  if (userRating !== null && !isNaN(userRating)) {
-    updateStars(Number(userRating));
-  }
-
-  loadData();          // rápido e assíncrono
-  incrementVisit();    // contagem
-
-  // Obtém IP em paralelo
-  getPublicIP().then(ip => {
-    userIP = ip;
-  });
-})();
+applyLangTexts(savedLang);
+if (userRating) updateStars(parseInt(userRating));
+incrementVisit().then(loadData);
 </script>
-  
+
 </body>
 </html>
