@@ -213,7 +213,7 @@ function formatDateLisbon() {
   const now = new Date();
   const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
   const pad = n => n.toString().padStart(2, '0');
-  return `${lisbon.getFullYear()}-${pad(lisbon.getMonth()+1)}-${pad(lisbon.getDate())} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
+  return `${lisbon.getFullYear()}-${pad(lisbon.getDate())}-${pad(lisbon.getMonth()+1)} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
 }
 
 async function getLocation() {
