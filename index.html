@@ -295,15 +295,15 @@ function formatDateLisbon() {
 // 📤 Enviar para Baserow com dados já guardados
 async function sendToBaserow(tipo, valor) {
   const data = {
-    ip: userIP,
     tipo,
     valor,
+    uuid: USER_UUID,
+    ip: userIP,
     date: formatDateLisbon(),
     localizacao: userLocation,
     dispositivo: userDevice,
     os: userOS,
-    browser: userBrowser,
-    uuid: USER_UUID
+    browser: userBrowser
   };
 
   await fetch(API_URL, {
