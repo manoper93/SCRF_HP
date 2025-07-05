@@ -173,177 +173,179 @@
     </div>
   </div>
 </div>
-
-<div class="stars-box">
-  <div id="stars-container" class="stars">
-    <span data-star="1">&#9733;</span>
-    <span data-star="2">&#9733;</span>
-    <span data-star="3">&#9733;</span>
-    <span data-star="4">&#9733;</span>
-    <span data-star="5">&#9733;</span>
-  </div>
-  <p id="vote-thank" style="margin: 5px 0 0; font-size: 12px;"></p>
+<div class="visitor-counter">
+  <div id="visit-label">Public visits: <span id="visit-count">Loading...</span></div>
 </div>
 
-<div class="visit-counter" id="visit-counter">Visits: ...</div>
+<div class="rating-widget">
+  <div id="stars">
+    <span class="star" data-value="1">&#9733;</span>
+    <span class="star" data-value="2">&#9733;</span>
+    <span class="star" data-value="3">&#9733;</span>
+    <span class="star" data-value="4">&#9733;</span>
+    <span class="star" data-value="5">&#9733;</span>
+  </div>
+  <div class="rating-counts" id="rating-counts">Loading...</div>
+</div>
 
 <script>
-const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
-const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
+const API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
+const API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
+
+const visitDisplay = document.getElementById('visit-count');
+const ratingDisplay = document.getElementById('rating-counts');
+const stars = document.querySelectorAll('.star');
+let userRating = localStorage.getItem('userRating');
 const lang = localStorage.getItem('lang') || 'en';
-document.documentElement.lang = lang;
 
-// Formatar data com fuso horário de Lisboa
-function formatDate() {
+function formatDateLisbon() {
   const now = new Date();
-  const lisbonTime = new Date(now.toLocaleString("en-GB", { timeZone: "Europe/Lisbon" }));
+  const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
   const pad = n => n.toString().padStart(2, '0');
-  return `${lisbonTime.getFullYear()}-${pad(lisbonTime.getMonth()+1)}-${pad(lisbonTime.getDate())} ${pad(lisbonTime.getHours())}:${pad(lisbonTime.getMinutes())}:${pad(lisbonTime.getSeconds())}`;
+  return `${lisbon.getFullYear()}-${pad(lisbon.getMonth()+1)}-${pad(lisbon.getDate())} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())}`;
 }
 
-const translations = {
-  "en": {
-    title: "Radio Frequency Control System",
-    subtitle1: "View Modules in 3D",
-    subtitle2: "View Schematic",
-    motor: "⚙️ Motor Module",
-    door: "🚪 Door Module",
-    schematic: "📐 Schematic",
-    gerber: "📐 Gerber",
-    thank: "Thanks for your vote!",
-    confirm: "Confirm change to",
-    visits: "Visits"
-  },
-  "pt-PT": {
-    title: "Sistema de Controlo Rádio Frequência",
-    subtitle1: "Visualizar Módulos em 3D",
-    subtitle2: "Visualizar Esquemático",
-    motor: "⚙️ Módulo Motor",
-    door: "🚪 Módulo Porta",
-    schematic: "📐 Esquemático",
-    gerber: "📐 Gerber",
-    thank: "Obrigado pela sua avaliação!",
-    confirm: "Confirmar alteração para",
-    visits: "Visitas"
+async function getLocation() {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    return `${data.city}, ${data.region}, ${data.country_name}`;
+  } catch {
+    return lang === 'pt-PT' ? 'Localização desconhecida' : 'Unknown location';
   }
-};
-
-function applyLangTexts(lang) {
-  const t = translations[lang] || translations["en"];
-  document.getElementById("page-title").textContent = t.title;
-  document.getElementById("main-title").textContent = t.title;
-  document.getElementById("subtitle1").textContent = t.subtitle1;
-  document.getElementById("subtitle2").textContent = t.subtitle2;
-  document.getElementById("motor-btn").textContent = t.motor;
-  document.getElementById("door-btn").textContent = t.door;
-  document.getElementById("schematic-btn").textContent = t.schematic;
-  document.getElementById("gerber-btn").textContent = t.gerber;
-  document.getElementById("vote-thank").textContent = "";
-  document.getElementById("visit-counter").textContent = `${t.visits}: ...`;
 }
 
-function toggleLang() {
-  const newLang = document.documentElement.lang === 'pt-PT' ? 'en' : 'pt-PT';
-  localStorage.setItem('lang', newLang);
-  location.reload();
+function getDeviceModel() {
+  return /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 }
 
-applyLangTexts(lang);
+function getOS() {
+  const ua = navigator.userAgent;
+  if (/Android/.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS';
+  if (/Win/.test(ua)) return 'Windows';
+  if (/Mac/.test(ua)) return 'Mac OS';
+  if (/Linux/.test(ua)) return 'Linux';
+  return 'Desconhecido';
+}
 
-function sendToBaserow(tipo, valor, localizacao = "N/A") {
+function getBrowser() {
+  const ua = navigator.userAgent;
+  if (/Edg\//.test(ua)) return "Edge";
+  if (/OPR\//.test(ua)) return "Opera";
+  if (/Chrome\//.test(ua)) return "Chrome";
+  if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return "Safari";
+  if (/Firefox\//.test(ua)) return "Firefox";
+  return "Desconhecido";
+}
+
+async function sendToBaserow(tipo, valor) {
+  const localizacao = await getLocation();
   const data = {
-    tipo: tipo,
-    valor: valor,
-    date: formatDate(),
-    localizacao: localizacao,
-    dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Telemóvel" : "Computador",
-    os: navigator.platform,
-    browser: navigator.userAgent
+    tipo,
+    valor,
+    date: formatDateLisbon(),
+    localizacao,
+    dispositivo: getDeviceModel(),
+    os: getOS(),
+    browser: getBrowser()
   };
-
-  fetch(BASEROW_API_URL, {
-    method: "POST",
+  await fetch(API_URL, {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": BASEROW_API_TOKEN
+      'Content-Type': 'application/json',
+      'Authorization': API_TOKEN
     },
     body: JSON.stringify(data)
-  })
-  .then(res => res.ok ? res.json() : Promise.reject("Erro no envio"))
-  .then(result => console.log("Enviado:", result))
-  .catch(err => console.error("Erro Baserow:", err));
+  });
 }
 
-// Contador total de visitas com paginação
-async function getAllVisits() {
-  let total = 0;
-  let offset = 0;
-  const limit = 200;
-
+async function loadData() {
+  let total = 0, offset = 0, limit = 200, all = [];
   while (true) {
-    const res = await fetch(`${BASEROW_API_URL}&limit=${limit}&offset=${offset}`, {
-      headers: { "Authorization": BASEROW_API_TOKEN }
+    const res = await fetch(`${API_URL}&limit=${limit}&offset=${offset}`, {
+      headers: { 'Authorization': API_TOKEN }
     });
     const json = await res.json();
-    const filtered = json.results.filter(r => r.tipo?.toLowerCase() === "visita");
-    total += filtered.length;
+    all = all.concat(json.results);
     if (!json.next) break;
     offset += limit;
   }
 
-  const label = lang === 'pt-PT' ? "Visitas" : "Visits";
-  document.getElementById("visit-counter").textContent = `${label}: ${total}`;
+  const visitas = all.filter(r => r.tipo === 'visita');
+  const votos = all.filter(r => /^[1-5]$/.test(r.tipo));
+  const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  votos.forEach(v => contagens[v.tipo] += parseInt(v.valor || 0));
+
+  const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
+  visitDisplay.textContent = visitas.length;
+  document.getElementById('visit-label').firstChild.textContent = visitLabel;
+
+  let html = '';
+  for (let i = 5; i >= 1; i--) {
+    const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
+    html += `<div>${lbl}: ${contagens[i]}</div>`;
+  }
+  ratingDisplay.innerHTML = html;
 }
 
-getAllVisits();
-
-// Registar visita (uma vez por sessão)
-if (!sessionStorage.getItem("visited")) {
-  sessionStorage.setItem("visited", "1");
-  fetch("https://ipapi.co/json/")
-    .then(res => res.json())
-    .then(loc => {
-      const local = `${loc.city}, ${loc.region}, ${loc.country_name}`;
-      sendToBaserow("visita", 1, local);
-    })
-    .catch(() => sendToBaserow("visita", 1));
+async function incrementVisit() {
+  if (!sessionStorage.getItem('visited')) {
+    await sendToBaserow('visita', 1);
+    sessionStorage.setItem('visited', 'true');
+  }
 }
 
-// Gerir estrelas (votos)
-function updateStarColors(rating) {
-  document.querySelectorAll("#stars-container span").forEach(star => {
-    const s = parseInt(star.dataset.star);
-    star.style.opacity = s <= rating ? "1" : "0.3";
+async function sendVote(n) {
+  if (userRating && userRating == n) {
+    alert(lang === 'pt-PT' ? 'Já votou com essa avaliação.' : 'You already voted with this rating.');
+    return;
+  }
+
+  const ask = userRating
+    ? (lang === 'pt-PT'
+      ? `Votou ${userRating} estrela(s). Quer alterar para ${n}?`
+      : `You voted ${userRating} star(s). Change to ${n}?`)
+    : (lang === 'pt-PT'
+      ? `Quer votar ${n} estrela(s)?`
+      : `Do you want to vote ${n} star(s)?`);
+  if (!confirm(ask)) return;
+
+  if (userRating && userRating !== n) await sendToBaserow(userRating, -1);
+  await sendToBaserow(n, 1);
+  localStorage.setItem('userRating', n);
+  userRating = n;
+  updateStars(n);
+  await loadData();
+}
+
+function updateStars(n) {
+  stars.forEach(s => {
+    s.classList.toggle('selected', parseInt(s.dataset.value) <= n);
   });
 }
 
-document.querySelectorAll("#stars-container span").forEach(star => {
-  star.addEventListener("click", () => {
-    const rating = parseInt(star.dataset.star);
-    const current = parseInt(localStorage.getItem("stars") || 0);
-    const confirmText = lang === "pt-PT"
-      ? `Confirmar alteração para ${rating} estrela(s)?`
-      : `Confirm change to ${rating} star(s)?`;
-
-    if (current !== rating && confirm(confirmText)) {
-      localStorage.setItem("stars", rating);
-      fetch("https://ipapi.co/json/")
-        .then(res => res.json())
-        .then(loc => {
-          const local = `${loc.city}, ${loc.region}, ${loc.country_name}`;
-          sendToBaserow("voto", rating, local);
-        })
-        .catch(() => sendToBaserow("voto", rating));
-      updateStarColors(rating);
-      document.getElementById("vote-thank").textContent = lang === "pt-PT"
-        ? "Obrigado pela sua avaliação!" : "Thanks for your vote!";
-    }
+stars.forEach(s => {
+  s.addEventListener('click', () => {
+    sendVote(parseInt(s.dataset.value));
   });
 });
 
-updateStarColors(parseInt(localStorage.getItem("stars") || 0));
+if (userRating) updateStars(parseInt(userRating));
+incrementVisit().then(loadData);
 </script>
 
-  
+<style>
+  .star {
+    font-size: 24px;
+    color: gray;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .star.selected {
+    color: gold;
+  }
+</style>
+
 </body>
 </html>
