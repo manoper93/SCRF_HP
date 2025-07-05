@@ -287,16 +287,17 @@ async function sendToBaserow(tipo, valor) {
 }
 
 async function loadData() {
-  console.log("📡 A carregar dados da API:", API_URL);
+  console.log("📡 A carregar dados da API (com nomes de campos)...");
+
   try {
     const limit = 500;
     const maxPaginas = 10;
-    const campoTipo = 'tipo';
-    const campoValor = 'valor';
+    const campoTipo = 'tipo';   // ← nome real no Baserow
+    const campoValor = 'valor'; // ← não usado para contagem
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let all = [];
 
-    // Criar todas as promises de fetch (até maxPaginas)
+    // Criar lista de pedidos em paralelo
     const requests = Array.from({ length: maxPaginas }, (_, i) => {
       const offset = i * limit;
       const url = `${API_URL}&limit=${limit}&offset=${offset}`;
@@ -313,10 +314,9 @@ async function loadData() {
       });
     });
 
-    // Executar os fetches em paralelo
+    // Esperar por todos os resultados (sem falhar tudo se uma der erro)
     const results = await Promise.allSettled(requests);
 
-    // Processar resultados válidos
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value.results?.length) {
         all = all.concat(r.value.results);
@@ -325,19 +325,19 @@ async function loadData() {
       }
     }
 
-    // Processamento de visitas e votos
+    // Separar visitas e votos
     const visitas = all.filter(r => r[campoTipo] === 'visita');
     const votos = all.filter(r => /^[1-5]$/.test(r[campoTipo]));
 
+    // Contar 1 voto por registo
     votos.forEach(v => {
       const estrela = parseInt(v[campoTipo]);
-      const quantidade = parseInt(v[campoValor]) || 0;
       if (estrela >= 1 && estrela <= 5) {
-        contagens[estrela] += quantidade;
+        contagens[estrela] += 1;
       }
     });
 
-    // Atualizar UI
+    // Atualizar contadores na interface
     const visitLabel = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     visitDisplay.textContent = visitas.length;
     document.getElementById('visit-label').firstChild.textContent = visitLabel;
