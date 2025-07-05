@@ -188,49 +188,50 @@
 <div class="visit-counter" id="visit-counter">Visits: ...</div>
 
 <script>
-  const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/';
-  const BASEROW_API_TOKEN = '4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
+  const BASEROW_API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
+  const BASEROW_API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
   const lang = localStorage.getItem('lang') || 'en';
   document.documentElement.lang = lang;
 
+  const translations = {
+    "en": {
+      title: "Radio Frequency Control System",
+      subtitle1: "View Modules in 3D",
+      subtitle2: "View Schematic",
+      motor: "⚙️ Motor Module",
+      door: "🚪 Door Module",
+      schematic: "📐 Schematic",
+      gerber: "📐 Gerber",
+      thank: "Thanks for your vote!",
+      confirm: "Confirm change to",
+      visits: "Visits"
+    },
+    "pt-PT": {
+      title: "Sistema de Controlo Rádio Frequência",
+      subtitle1: "Visualizar Módulos em 3D",
+      subtitle2: "Visualizar Esquemático",
+      motor: "⚙️ Módulo Motor",
+      door: "🚪 Módulo Porta",
+      schematic: "📐 Esquemático",
+      gerber: "📐 Gerber",
+      thank: "Obrigado pela sua avaliação!",
+      confirm: "Confirmar alteração para",
+      visits: "Visitas"
+    }
+  };
+
   function applyLangTexts(lang) {
-    const t = {
-      "en": {
-        title: "Radio Frequency Control System",
-        subtitle1: "View Modules in 3D",
-        subtitle2: "View Schematic",
-        motor: "⚙️ Motor Module",
-        door: "🚪 Door Module",
-        schematic: "📐 Schematic",
-        gerber: "📐 Gerber",
-        thank: "Thanks for your vote!",
-        confirm: "Confirm change to",
-        visits: "Visits"
-      },
-      "pt-PT": {
-        title: "Sistema de Controlo Rádio Frequência",
-        subtitle1: "Visualizar Módulos em 3D",
-        subtitle2: "Visualizar Esquemático",
-        motor: "⚙️ Módulo Motor",
-        door: "🚪 Módulo Porta",
-        schematic: "📐 Esquemático",
-        gerber: "📐 Gerber",
-        thank: "Obrigado pela sua avaliação!",
-        confirm: "Confirmar alteração para",
-        visits: "Visitas"
-      }
-    };
-    const L = t[lang] || t["en"];
-    document.getElementById("page-title").textContent = L.title;
-    document.getElementById("main-title").textContent = L.title;
-    document.getElementById("subtitle1").textContent = L.subtitle1;
-    document.getElementById("subtitle2").textContent = L.subtitle2;
-    document.getElementById("motor-btn").textContent = L.motor;
-    document.getElementById("door-btn").textContent = L.door;
-    document.getElementById("schematic-btn").textContent = L.schematic;
-    document.getElementById("gerber-btn").textContent = L.gerber;
+    const t = translations[lang] || translations["en"];
+    document.getElementById("page-title").textContent = t.title;
+    document.getElementById("main-title").textContent = t.title;
+    document.getElementById("subtitle1").textContent = t.subtitle1;
+    document.getElementById("subtitle2").textContent = t.subtitle2;
+    document.getElementById("motor-btn").textContent = t.motor;
+    document.getElementById("door-btn").textContent = t.door;
+    document.getElementById("schematic-btn").textContent = t.schematic;
+    document.getElementById("gerber-btn").textContent = t.gerber;
     document.getElementById("vote-thank").textContent = "";
-    document.getElementById("visit-counter").textContent = `${L.visits}: ...`;
+    document.getElementById("visit-counter").textContent = `${t.visits}: ...`;
   }
 
   function toggleLang() {
@@ -243,13 +244,13 @@
 
   function sendToBaserow(tipo, valor) {
     const data = {
-      field_4750715: tipo,
-      field_4750716: valor,
-      field_4750717: new Date().toISOString(),
-      field_4750718: lang,
-      field_4750719: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
-      field_4750720: navigator.platform,
-      field_4750721: navigator.userAgent
+      tipo: tipo,
+      valor: valor,
+      date: new Date().toISOString(),
+      localizacao: Intl.DateTimeFormat().resolvedOptions().locale,
+      dispositivo: /Mobi|Android/i.test(navigator.userAgent) ? "Telemóvel" : "Computador",
+      os: navigator.platform,
+      browser: navigator.userAgent
     };
 
     fetch(BASEROW_API_URL, {
@@ -258,20 +259,20 @@
         "Content-Type": "application/json",
         "Authorization": BASEROW_API_TOKEN
       },
-      body: JSON.stringify({ fields: data })
+      body: JSON.stringify(data)
     })
     .then(res => res.ok ? res.json() : Promise.reject("Erro no envio"))
-    .then(result => console.log("Guardado:", result))
-    .catch(err => console.error("Erro Baserow:", err));
+    .then(result => console.log("Enviado com sucesso:", result))
+    .catch(err => console.error("Erro ao enviar para o Baserow:", err));
   }
 
   function getVisitCount() {
-    fetch(BASEROW_API_URL + '?user_field_names=true', {
+    fetch(BASEROW_API_URL, {
       headers: { "Authorization": BASEROW_API_TOKEN }
     })
     .then(res => res.json())
     .then(data => {
-      const total = data.results.filter(row => row.field_4750715?.toLowerCase() === "visita").length;
+      const total = data.results.filter(row => row.tipo?.toLowerCase() === "visita").length;
       const label = lang === 'pt-PT' ? "Visitas" : "Visits";
       document.getElementById("visit-counter").textContent = `${label}: ${total}`;
     })
@@ -312,5 +313,7 @@
 
   updateStarColors(parseInt(localStorage.getItem("stars") || 0));
 </script>
+
+  
 </body>
 </html>
