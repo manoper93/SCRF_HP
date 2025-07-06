@@ -90,25 +90,32 @@
   </header>
 
   <div class="content-container" id="project-summary">
-    <p>
-      Este projeto apresenta um sistema de controlo sem fios para portões automáticos, composto por dois módulos: Módulo Motor e Módulo Porta. A comunicação é feita por rádio a 868 MHz com encriptação AES-128, CRC e filtragem por UID. O Módulo Porta deteta o estado da porta com um sensor Reed Switch e comunica via rádio com consumo ultrabaixo. Recorrendo ao modo LPAWUR (escuta autónoma de baixo consumo) e ao RTC (relógio em tempo real), acorda periodicamente para enviar heartbeat e verificar o estado da bateria, com autonomia até 1 ano com 2 pilhas AA. O sistema inclui watchdog (IWDG) para deteção de bloqueios, emparelhamento seguro e firmware modular com deteção automática de modo Porta/Motor. Os testes validaram comunicação fiável até 8 metros, mesmo com obstáculos, e resposta eficiente a falhas ou eventos.
+    <p id="summary-text">
+      <!-- Conteúdo será injetado via JavaScript -->
     </p>
   </div>
 
   <script>
     const lang = localStorage.getItem('lang') || 'en';
-
     document.documentElement.lang = lang;
 
-    if (lang === 'pt-PT') {
-      document.getElementById('back-button').textContent = '⬅ Voltar';
-      document.getElementById('page-title').textContent = 'Resumo do Projeto';
-      document.getElementById('main-title').textContent = 'Resumo do Projeto';
-    } else {
-      document.getElementById('back-button').textContent = '⬅ Back';
-      document.getElementById('page-title').textContent = 'Project Summary';
-      document.getElementById('main-title').textContent = 'Project Summary';
-    }
+    const texts = {
+      'pt-PT': {
+        back: '⬅ Voltar',
+        title: 'Resumo do Projeto',
+        summary: `Este projeto apresenta um sistema de controlo sem fios para portões automáticos, composto por dois módulos: Módulo Motor e Módulo Porta. A comunicação é feita por rádio a 868 MHz com encriptação AES-128, CRC e filtragem por UID. O Módulo Porta deteta o estado da porta com um sensor Reed Switch e comunica via rádio com consumo ultrabaixo. Recorrendo ao modo LPAWUR (escuta autónoma de baixo consumo) e ao RTC (relógio em tempo real), acorda periodicamente para enviar heartbeat e verificar o estado da bateria, com autonomia até 1 ano com 2 pilhas AA. O sistema inclui watchdog (IWDG) para deteção de bloqueios, emparelhamento seguro e firmware modular com deteção automática de modo Porta/Motor. Os testes validaram comunicação fiável até 8 metros, mesmo com obstáculos, e resposta eficiente a falhas ou eventos.`
+      },
+      'en': {
+        back: '⬅ Back',
+        title: 'Project Summary',
+        summary: `This project presents a wireless control system for automatic gates, composed of two modules: Motor Module and Door Module. Communication is done via 868 MHz radio with AES-128 encryption, CRC, and UID filtering. The Door Module detects the door state using a Reed Switch and communicates wirelessly with ultra-low power consumption. Using LPAWUR mode (low-power autonomous listening) and an RTC (real-time clock), it periodically wakes up to send a heartbeat and check battery status, achieving up to 1 year of autonomy with 2 AA batteries. The system includes a watchdog (IWDG) for lockup detection, secure pairing, and modular firmware with automatic detection of Door/Motor mode. Tests validated reliable communication up to 8 meters, even with obstacles, and effective response to failures or events.`
+      }
+    };
+
+    document.getElementById('back-button').textContent = texts[lang].back;
+    document.getElementById('page-title').textContent = texts[lang].title;
+    document.getElementById('main-title').textContent = texts[lang].title;
+    document.getElementById('summary-text').textContent = texts[lang].summary;
   </script>
 
 </body>
