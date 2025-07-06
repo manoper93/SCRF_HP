@@ -21,14 +21,14 @@
     }
 
     header {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      padding: 20px;
-      box-sizing: border-box;
-      position: relative;
-      justify-content: center;
-    }
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 
     .back-button {
       position: absolute;
@@ -48,13 +48,15 @@
     }
 
     .titulo {
-      font-size: 5vw;
-      font-weight: bold;
-      text-align: center;
-      text-shadow: 0 0 8px rgba(0,0,0,0.6);
-      margin: 0;
-      flex-grow: 1;
-    }
+  font-size: 5vw;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0,0,0,0.6);
+  margin: 0 auto;
+  width: 100%;
+  pointer-events: none; /* evita que o botão bloqueie o clique no título */
+}
+
 
     @media (min-width: 600px) {
       .titulo {
