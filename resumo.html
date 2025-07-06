@@ -64,20 +64,30 @@
 
     .content-container {
       flex-grow: 1;
-      padding: 20px;
-      max-width: 900px;
+      padding: 24px;
+      max-width: 800px;
       margin: 0 auto;
-      font-size: 1rem;
-      line-height: 1.6;
+      font-size: 1.05rem;
+      line-height: 1.8;
       background-color: rgba(0, 0, 0, 0.5);
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      text-align: justify;
+      text-wrap: pretty;
+    }
+
+    .content-container p {
+      margin: 0;
+      text-align: justify;
+      hyphens: auto;
+      word-break: normal;
     }
 
     @media (max-width: 600px) {
       .content-container {
-        font-size: 0.95rem;
+        font-size: 1rem;
         padding: 16px;
+        margin: 0 12px;
       }
     }
   </style>
@@ -91,7 +101,7 @@
 
   <div class="content-container" id="project-summary">
     <p id="summary-text">
-      <!-- Conteúdo será injetado via JavaScript -->
+      <!-- Conteúdo será preenchido dinamicamente -->
     </p>
   </div>
 
