@@ -274,10 +274,8 @@ async function getLocationOnce() {
 }
 
 function formatDateLisbon() {
-  const now = new Date();
-  const lisbon = new Date(now.toLocaleString('en-GB', { timeZone: 'Europe/Lisbon' }));
-  const pad = n => String(n).padStart(2, '0');
-  return ${lisbon.getFullYear()}-${pad(lisbon.getMonth() + 1)}-${pad(lisbon.getDate())} ${pad(lisbon.getHours())}:${pad(lisbon.getMinutes())}:${pad(lisbon.getSeconds())};
+  const lisbon = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Lisbon' }).replace('T', ' ');
+  return lisbon.split('.')[0]; // remove milissegundos
 }
 
 async function sendToBaserow(tipo, valor) {
