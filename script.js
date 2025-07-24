@@ -1,7 +1,7 @@
 const API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
 const API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
 const PAGE_SIZE = 100;     // Máximo registos por pedido
-const MAX_RECORDS = 1000; // Máximo total a obter
+const MAX_RECORDS = 10; // Máximo total a obter
 
 const USER_UUID = getOrCreateUUID();
 const stars = document.querySelectorAll('.star');
