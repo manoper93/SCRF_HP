@@ -77,18 +77,12 @@ async function getLocationOnce() {
   });
 }
 
-function formatDateLisbon() {
-  const lisbon = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Lisbon' }).replace('T', ' ');
-  return lisbon.split('.')[0]; // remove milissegundos
-}
-
 // Essa função envia os dados para a API, agora recebe IP e localização já resolvidos
 async function sendToBaserow(tipo, valor, ip, localizacao) {
   const data = {
     tipo, valor,
     uuid: USER_UUID,
     ip,
-    date: formatDateLisbon(),
     localizacao,
     dispositivo: userDevice,
     os: userOS,
@@ -146,7 +140,7 @@ async function loadData() {
     const all = json.results;
 
     // Filtra as visitas e votos com valores numéricos
-    const visitas = all.filter(r => r.tipo === 'visita' && r.valor === '1');
+    const visitas = all.filter(r => r.tipo === 'visita' && r.valor === 'V');
 
     // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
     const votos = all.filter(r => {
