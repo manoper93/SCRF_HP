@@ -479,9 +479,10 @@ function applyLangTexts(lang) {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
   
+  await incrementVisit();
+  
   loadData();
   
-  await incrementVisit();
 })();
 </script>
 
