@@ -136,46 +136,56 @@ async function loadData() {
     const res = await fetch(`${API_URL}&limit=2000`, {
       headers: { 'Authorization': API_TOKEN }
     });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
     const json = await res.json();
     const all = json.results;
 
-    // Filtra as visitas e votos com valores numéricos
     const visitas = all.filter(r => {
       return typeof r.tipo === 'string' && typeof r.valor === 'string' &&
-             r.tipo.toLowerCase() === 'visita' && r.valor.toLowerCase() === 'v';
+             r.tipo.toLowerCase() === 'visita' && r.valor.toUpperCase() === 'V';
     });
 
-    // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
     const votos = all.filter(r => {
       const tipoNum = parseInt(r.tipo);
       const valorNum = parseInt(r.valor);
-      return tipoNum >=1 && tipoNum <=5 && (valorNum === 1 || valorNum === -1);
+      return Number.isInteger(tipoNum) && tipoNum >= 1 && tipoNum <= 5 &&
+             (valorNum === 1 || valorNum === -1);
     });
 
+    // Inicializa contagens das estrelas 1 a 5
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    votos.forEach(v => {
-      const estrela = parseInt(v.tipo);
-      const valor = parseInt(v.valor);
-      contagens[estrela] += valor;
+
+    // Soma votos por estrela
+    votos.forEach(({ tipo, valor }) => {
+      const estrela = parseInt(tipo);
+      const val = parseInt(valor);
+      contagens[estrela] += val;
     });
 
+    // Mostrar total visitas
     visitDisplay.textContent = visitas.length;
-    document.getElementById('visit-label').firstChild.textContent = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
 
+    // Atualizar label visitas conforme idioma
+    const visitLabelElem = document.getElementById('visit-label');
+    if (visitLabelElem?.firstChild) {
+      visitLabelElem.firstChild.textContent = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
+    }
+
+    // Mostrar contagens das estrelas (não mostrar negativos, mostrar 0)
     ratingDisplay.innerHTML = '';
     for (let i = 5; i >= 1; i--) {
       const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
-      // Não mostrar contagem negativa, mostrar 0 no mínimo
       const count = contagens[i] < 0 ? 0 : contagens[i];
       ratingDisplay.innerHTML += `<div>${lbl}: ${count}</div>`;
     }
+
   } catch (err) {
     console.error("Error in loadData:", err);
     visitDisplay.textContent = 'Error';
     ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
   }
 }
-
 
 async function incrementVisit() {
   if (sessionStorage.getItem('visited')) return;
