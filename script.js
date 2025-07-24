@@ -140,7 +140,7 @@ async function loadData() {
     const all = json.results;
 
     // Filtra as visitas e votos com valores numéricos
-    const visitas = all.filter(r => r.tipo === 'visita' && r.valor === 'V');
+    const visitas = all.filter(r => r.tipo === 'visita' && r.valor.toUpperCase() === 'V');
 
     // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
     const votos = all.filter(r => {
