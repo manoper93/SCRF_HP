@@ -135,59 +135,43 @@ async function sendVote(n) {
 
 async function loadData() {
   try {
-    let all = [], offset = 0;
+    const res = await fetch(${API_URL}&limit=2000, {
+      headers: { 'Authorization': API_TOKEN }
+    });
+    const json = await res.json();
+    const all = json.results;
 
-    while (offset < MAX_RECORDS) {
-      const res = await fetch(`${API_URL}&limit=${PAGE_SIZE}&offset=${offset}`, {
-        headers: { 'Authorization': API_TOKEN }
-      });
-      if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
-      const json = await res.json();
-      if (!json.results.length) break;
-      all.push(...json.results);
-      if (json.results.length < PAGE_SIZE) break;
-      offset += PAGE_SIZE;
-    }
+    // Filtra as visitas e votos com valores numéricos
+    const visitas = all.filter(r => r.tipo === 'visita' && r.valor === 'v');
 
-    // Separar visitas e votos
-    let visitas = 0;
+    // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
+    const votos = all.filter(r => {
+      const tipoNum = parseInt(r.tipo);
+      const valorNum = parseInt(r.valor);
+      return tipoNum >=1 && tipoNum <=5 && (valorNum === 1 || valorNum === -1);
+    });
+
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    votos.forEach(v => {
+      const estrela = parseInt(v.tipo);
+      const valor = parseInt(v.valor);
+      contagens[estrela] += valor;
+    });
 
-    for (const r of all) {
-      const tipo = r.tipo;
-      const valor = r.valor;
+    visitDisplay.textContent = visitas.length;
+    document.getElementById('visit-label').firstChild.textContent = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
 
-      if (typeof tipo === 'string' && typeof valor === 'string') {
-        if (tipo.toLowerCase() === 'visita' && valor.toLowerCase() === 'v') {
-          visitas++;
-          continue;
-        }
-      }
-
-      const t = parseInt(tipo), v = parseInt(valor);
-      if (Number.isInteger(t) && t >= 1 && t <= 5 && (v === 1 || v === -1)) {
-        contagens[t] += v;
-      }
+    ratingDisplay.innerHTML = '';
+    for (let i = 5; i >= 1; i--) {
+      const lbl = lang === 'pt-PT' ? ${i} estrela(s) : ${i} star(s);
+      // Não mostrar contagem negativa, mostrar 0 no mínimo
+      const count = contagens[i] < 0 ? 0 : contagens[i];
+      ratingDisplay.innerHTML += <div>${lbl}: ${count}</div>;
     }
-
-    // Mostrar visitas
-    if (visitDisplay) visitDisplay.textContent = visitas;
-    if (visitLabelElem?.firstChild)
-      visitLabelElem.firstChild.textContent = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
-
-    // Mostrar votos
-    if (ratingDisplay) {
-      ratingDisplay.innerHTML = [5, 4, 3, 2, 1].map(i => {
-        const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
-        const count = Math.max(0, contagens[i]);
-        return `<div>${lbl}: ${count}</div>`;
-      }).join('');
-    }
-
   } catch (err) {
-    console.error("Erro em loadData:", err);
-    if (visitDisplay) visitDisplay.textContent = 'Erro';
-    if (ratingDisplay) ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
+    console.error("Error in loadData:", err);
+    visitDisplay.textContent = 'Error';
+    ratingDisplay.innerHTML = <div style="color:red;">Erro: ${err.message}</div>;
   }
 }
 
