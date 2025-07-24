@@ -443,6 +443,9 @@ function applyLangTexts(lang) {
   document.documentElement.lang = lang;
   applyLangTexts(lang);
 
+  // Carregar votos/visitas imediatamente (sem bloquear)
+  loadData();
+
   if (userRating !== null && !isNaN(userRating)) {
     updateStars(Number(userRating));
   }
@@ -454,9 +457,6 @@ function applyLangTexts(lang) {
   // Começar já IP e localização (mas não esperar)
   getPublicIP();
   getLocationOnce();
-
-  // Carregar votos/visitas imediatamente (sem bloquear)
-  loadData();
 
   // A visita pode demorar, mas não bloqueia o resto
   await incrementVisit();
