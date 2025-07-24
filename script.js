@@ -141,49 +141,54 @@ async function loadData() {
     const json = await res.json();
     const all = json.results;
 
-    const visitas = all.filter(r => {
-      return typeof r.tipo === 'string' && typeof r.valor === 'string' &&
-             r.tipo.toLowerCase() === 'visita' && r.valor.toUpperCase() === 'V';
-    });
+    // Filtrar visitas
+    const visitas = all.filter(r =>
+      typeof r.tipo === 'string' &&
+      typeof r.valor === 'string' &&
+      r.tipo.toLowerCase() === 'visita' &&
+      r.valor.toLowerCase() === 'V'
+    );
 
+    // Filtrar votos válidos
     const votos = all.filter(r => {
-      const tipoNum = parseInt(r.tipo);
-      const valorNum = parseInt(r.valor);
+      const tipoNum = parseInt(r.tipo, 10);
+      const valorNum = parseInt(r.valor, 10);
       return Number.isInteger(tipoNum) && tipoNum >= 1 && tipoNum <= 5 &&
              (valorNum === 1 || valorNum === -1);
     });
 
-    // Inicializa contagens das estrelas 1 a 5
+    // Contagem inicial das estrelas
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-    // Soma votos por estrela
     votos.forEach(({ tipo, valor }) => {
-      const estrela = parseInt(tipo);
-      const val = parseInt(valor);
-      contagens[estrela] += val;
+      const estrela = parseInt(tipo, 10);
+      const val = parseInt(valor, 10);
+      if (contagens[estrela] !== undefined) {
+        contagens[estrela] += val;
+      }
     });
 
-    // Mostrar total visitas
-    visitDisplay.textContent = visitas.length;
+    if (visitDisplay) visitDisplay.textContent = visitas.length;
 
-    // Atualizar label visitas conforme idioma
+    // Atualizar label visitas
     const visitLabelElem = document.getElementById('visit-label');
     if (visitLabelElem?.firstChild) {
       visitLabelElem.firstChild.textContent = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
     }
 
-    // Mostrar contagens das estrelas (não mostrar negativos, mostrar 0)
-    ratingDisplay.innerHTML = '';
+    // Mostrar contagens
+    let html = '';
     for (let i = 5; i >= 1; i--) {
       const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
       const count = contagens[i] < 0 ? 0 : contagens[i];
-      ratingDisplay.innerHTML += `<div>${lbl}: ${count}</div>`;
+      html += `<div>${lbl}: ${count}</div>`;
     }
+    if (ratingDisplay) ratingDisplay.innerHTML = html;
 
   } catch (err) {
     console.error("Error in loadData:", err);
-    visitDisplay.textContent = 'Error';
-    ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
+    if (visitDisplay) visitDisplay.textContent = 'Error';
+    if (ratingDisplay) ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
   }
 }
 
