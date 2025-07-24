@@ -140,7 +140,7 @@ async function loadData() {
     const all = json.results;
 
     // Filtra as visitas e votos com valores numéricos
-    const visitas = all.filter(r => r.tipo === 'visita' && r.valor.toUpperCase() === 'V');
+    const visitas = all.filter(r => r.tipo === 'visita' && r.valor === 'v');
 
     // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
     const votos = all.filter(r => {
@@ -181,7 +181,7 @@ async function incrementVisit() {
   const ip = await getPublicIP();
   const localizacao = await getLocationOnce();
 
-  await sendToBaserow('visita', 1, ip, localizacao);
+  await sendToBaserow('visita', 'v', ip, localizacao);
   sessionStorage.setItem('visited', 'true');
 }
 
