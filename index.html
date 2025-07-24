@@ -278,26 +278,36 @@ async function getPublicIP() {
 }
 
 async function getLocationOnce() {
+  // Tenta ler localização guardada (cache) com timestamp inferior a 10 minutos
+  const cached = localStorage.getItem('cachedLocation');
+  const cachedTime = localStorage.getItem('cachedLocationTime');
+  if (cached && cachedTime && (Date.now() - parseInt(cachedTime)) < 10 * 60 * 1000) {
+    return cached;
+  }
+
   return new Promise(resolve => {
     if (!navigator.geolocation) {
       resolve('não suportada');
       return;
     }
-    navigator.geolocation.getCurrentPosition(async pos => {
+    navigator.geolocation.getCurrentPosition(pos => {
       const { latitude, longitude } = pos.coords;
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-        const data = await res.json();
-        const city = data.address.city || data.address.town || data.address.village || '';
-        const region = data.address.state || '';
-        const country = data.address.country || '';
-        const locationString = [city, region, country].filter(Boolean).join(', ');
-        resolve(locationString || 'indisponível');
-      } catch {
-        resolve('indisponível');
-      }
-    }, () => {
-      resolve('negada');
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+        .then(res => res.json())
+        .then(data => {
+          const city = data.address.city || data.address.town || data.address.village || '';
+          const region = data.address.state || '';
+          const country = data.address.country || '';
+          const locationString = [city, region, country].filter(Boolean).join(', ') || 'indisponível';
+          localStorage.setItem('cachedLocation', locationString);
+          localStorage.setItem('cachedLocationTime', Date.now().toString());
+          resolve(locationString);
+        })
+        .catch(() => resolve('indisponível'));
+    }, () => resolve('negada'), {
+      timeout: 5000,
+      maximumAge: 60000,
+      enableHighAccuracy: false
     });
   });
 }
