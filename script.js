@@ -134,23 +134,38 @@ async function sendVote(n) {
 }
 
 async function loadData() {
-  try {
-    const res = await fetch(${API_URL}&limit=2000, {
-      headers: { 'Authorization': API_TOKEN }
-    });
-    const json = await res.json();
-    const all = json.results;
 
-    // Filtra as visitas e votos com valores numéricos
+  let all = [];
+  let offset = 0;
+  const limit = 200;
+  let hasMore = true;
+
+  try {
+    // Paginação para carregar tudo
+    while (hasMore) {
+      const res = await fetch(`${API_URL}&limit=${limit}&offset=${offset}`, {
+        headers: { 'Authorization': API_TOKEN }
+      });
+      const json = await res.json();
+      all = all.concat(json.results);
+      if (json.next) {
+        offset += limit;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    // Filtrar visitas
     const visitas = all.filter(r => r.tipo === 'visita' && r.valor === 'v');
 
-    // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
+    // Filtrar votos entre 1 e 5
     const votos = all.filter(r => {
       const tipoNum = parseInt(r.tipo);
       const valorNum = parseInt(r.valor);
-      return tipoNum >=1 && tipoNum <=5 && (valorNum === 1 || valorNum === -1);
+      return tipoNum >= 1 && tipoNum <= 5 && (valorNum === 1 || valorNum === -1);
     });
 
+    // Contar votos
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
       const estrela = parseInt(v.tipo);
@@ -158,20 +173,22 @@ async function loadData() {
       contagens[estrela] += valor;
     });
 
+    // Mostrar visitas
     visitDisplay.textContent = visitas.length;
-    document.getElementById('visit-label').firstChild.textContent = lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
+    document.getElementById('visit-label').firstChild.textContent =
+      lang === 'pt-PT' ? 'Visitas públicas: ' : 'Public visits: ';
 
+    // Mostrar votos
     ratingDisplay.innerHTML = '';
     for (let i = 5; i >= 1; i--) {
-      const lbl = lang === 'pt-PT' ? ${i} estrela(s) : ${i} star(s);
-      // Não mostrar contagem negativa, mostrar 0 no mínimo
+      const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
       const count = contagens[i] < 0 ? 0 : contagens[i];
-      ratingDisplay.innerHTML += <div>${lbl}: ${count}</div>;
+      ratingDisplay.innerHTML += `<div>${lbl}: ${count}</div>`;
     }
   } catch (err) {
     console.error("Error in loadData:", err);
     visitDisplay.textContent = 'Error';
-    ratingDisplay.innerHTML = <div style="color:red;">Erro: ${err.message}</div>;
+    ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
   }
 }
 
