@@ -214,6 +214,11 @@
     <div class="buttons">
       <a href="gerber.html"><button class="btn" id="gerber-btn">📐 Gerber</button></a>
     </div>
+
+    <div id="final-grade" style="margin-top: 20px; font-size: 18px; text-shadow: 1px 1px 2px #000;">
+      Final grade of internship/project: <strong>19 / 20</strong>
+    </div>
+
   </div>
 </div>
 
@@ -442,7 +447,8 @@ function applyLangTexts(lang) {
       door: '🚪 Módulo Porta',
       resumo: '📝 Resumo do Projeto',
       schematic: '📐 Esquemático',
-      gerber: '📐 Gerber'
+      gerber: '📐 Gerber',
+      grade: 'Nota final do projeto/estágio: <strong>19 / 20</strong>'
     },
     'en': {
       title: 'Radio Frequency Control System',
@@ -452,7 +458,8 @@ function applyLangTexts(lang) {
       door: '🚪 Door Module',
       resumo: '📝 Project Summary',
       schematic: '📐 Schematic',
-      gerber: '📐 Gerber'
+      gerber: '📐 Gerber',
+      grade: 'Final grade of internship/project: <strong>19 / 20</strong>'
     }
   };
   const t = texts[lang] || texts['en'];
@@ -465,6 +472,7 @@ function applyLangTexts(lang) {
   document.getElementById('resumo-btn').textContent = t.resumo;
   document.getElementById('schematic-btn').textContent = t.schematic;
   document.getElementById('gerber-btn').textContent = t.gerber;
+  document.getElementById('final-grade').innerHTML = t.grade;
 }
 
 (async function init() {
