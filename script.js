@@ -12,7 +12,7 @@ const userOS = /Android/.test(navigator.userAgent) ? 'Android' :
                /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iOS' :
                /Win/.test(navigator.userAgent) ? 'Windows' :
                /Mac/.test(navigator.userAgent) ? 'Mac OS' :
-               /Linux/.test(navigator.userAgent) ? 'Linux' : 'Desconhecido';
+               /Linux/.test(navigator.userAgent) ? 'Linux' : 'Unknown';
 const userBrowser = /Edg\//.test(navigator.userAgent) ? "Edge" :
                     /OPR\//.test(navigator.userAgent) ? "Opera" :
                     /Chrome\//.test(navigator.userAgent) ? "Chrome" :
@@ -38,7 +38,7 @@ async function getPublicIP() {
     const json = await res.json();
     return json.ip;
   } catch {
-    return 'unknown';
+    return 'Unknown';
   }
 }
 
@@ -52,7 +52,7 @@ async function getLocationOnce() {
 
   return new Promise(resolve => {
     if (!navigator.geolocation) {
-      resolve('não suportada');
+      resolve('Does not support');
       return;
     }
     navigator.geolocation.getCurrentPosition(pos => {
@@ -63,13 +63,13 @@ async function getLocationOnce() {
           const city = data.address.city || data.address.town || data.address.village || '';
           const region = data.address.state || '';
           const country = data.address.country || '';
-          const locationString = [city, region, country].filter(Boolean).join(', ') || 'indisponível';
+          const locationString = [city, region, country].filter(Boolean).join(', ') || 'Unavailable';
           localStorage.setItem('cachedLocation', locationString);
           localStorage.setItem('cachedLocationTime', Date.now().toString());
           resolve(locationString);
         })
-        .catch(() => resolve('indisponível'));
-    }, () => resolve('negada'), {
+        .catch(() => resolve('Unavailable'));
+    }, () => resolve('Denied'), {
       timeout: 5000,
       maximumAge: 60000,
       enableHighAccuracy: false
@@ -139,7 +139,7 @@ async function sendVote(n) {
 
 async function loadData() {
   try {
-    const res = await fetch(`${API_URL}&limit=5000`, {
+    const res = await fetch(`${API_URL}&limit=2000`, {
       headers: { 'Authorization': API_TOKEN }
     });
     const json = await res.json();
@@ -173,8 +173,8 @@ async function loadData() {
       ratingDisplay.innerHTML += `<div>${lbl}: ${count}</div>`;
     }
   } catch (err) {
-    console.error("Erro no loadData:", err);
-    visitDisplay.textContent = 'Erro';
+    console.error("Error in loadData:", err);
+    visitDisplay.textContent = 'Error';
     ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
   }
 }
