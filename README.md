@@ -1,4 +1,8 @@
-# Radio Frequency Control System
+<div align="center">
+  <h2>Radio Frequency Control System</h2>
+  <p><strong>Sistema de Controlo por Rádio Frequência</strong></p>
+</div>
+
 
 <div align="center">
   <a href="https://manoper93.github.io/SCRF_HP/" target="_blank">
