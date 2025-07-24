@@ -1,6 +1,6 @@
 # Sistema de Controlo Rádio Frequência
 
-<img src="https://github.com/user-attachments/assets/d67fee48-8bf4-4e06-a38c-e5fc8dc90ed3" alt="logo_0" width="10"/>
+<img src="https://github.com/user-attachments/assets/d67fee48-8bf4-4e06-a38c-e5fc8dc90ed3" alt="logo_0" width="20"/>
 &nbsp;
 SITE --> [Sistema de Controlo Rádio Frequência](https://manoper93.github.io/SCRF_HP/)
 
