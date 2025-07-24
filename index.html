@@ -390,10 +390,9 @@ async function loadData() {
 async function incrementVisit() {
   if (sessionStorage.getItem('visited')) return;
 
-  // Espera até IP e localização estarem preenchidos
-  while (!userIP || !userLocation) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  // Esperar IP e localização terminarem
+  await getPublicIP();
+  await getLocationOnce();
 
   await sendToBaserow('visita', 1);
   sessionStorage.setItem('visited', 'true');
@@ -460,7 +459,7 @@ function applyLangTexts(lang) {
   loadData();
 
   // A visita pode demorar, mas não bloqueia o resto
-  incrementVisit();
+  await incrementVisit();
 })();
 
 </script>
