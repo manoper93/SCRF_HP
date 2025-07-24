@@ -365,7 +365,7 @@ async function loadData() {
     const all = json.results;
 
     const visitas = all.filter(r => r.tipo === 'visita' && r.valor === '1');
-    const votos = all.filter(r => /^[1-5]$/.test(r.tipo) && /^-?1$/.test(r.valor));
+    const votos = all.filter(r => /^[1-5]$/.test(String(r.tipo)) && /^-?1$/.test(String(r.valor)));
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
       const estrela = parseInt(v.tipo), valor = parseInt(v.valor);
