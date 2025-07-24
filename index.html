@@ -240,8 +240,9 @@ const stars = document.querySelectorAll('.star');
 const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const lang = localStorage.getItem('lang') || 'en';
-
-let userIP = '-', userLocation = '-';
+const userLocation = getLocationOnce();
+const userIP = getPublicIP();
+  
 const userDevice = /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 const userOS = /Android/.test(navigator.userAgent) ? 'Android' :
                /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iOS' :
@@ -307,7 +308,6 @@ function formatDateLisbon() {
 }
 
 async function sendToBaserow(tipo, valor) {
-  
   const data = {
     tipo, valor,
     uuid: USER_UUID,
@@ -450,10 +450,6 @@ function applyLangTexts(lang) {
   
   // Carregar votos/visitas imediatamente (sem bloquear)
   loadData();
-  
-  // Esperar IP e localização terminarem
-  await getPublicIP();
-  await getLocationOnce();
   
   // A visita pode demorar, mas não bloqueia o resto
   await incrementVisit();
