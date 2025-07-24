@@ -148,6 +148,34 @@
         font-size: 20px;
       }
     }
+
+    .github-footer {
+      position: fixed;
+      bottom: 50px; /* para não sobrepor o visitor-counter e rating-widget */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: white;
+      z-index: 1200;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .github-footer a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .github-footer a:hover {
+      text-decoration: underline;
+    }
+
   </style>
 </head>
 
@@ -436,6 +464,13 @@ function applyLangTexts(lang) {
 })();
 
 </script>
-  
+
+<div class="github-footer">
+  <a href="https://github.com/teu-usuario/teu-repositorio" target="_blank" rel="noopener noreferrer" aria-label="GitHub Repository">
+    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="height:24px; vertical-align:middle; margin-right:8px;">
+    GitHub Repository
+  </a>
+</div>
+
 </body>
 </html>
