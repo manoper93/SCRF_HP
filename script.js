@@ -136,7 +136,7 @@ async function sendVote(n) {
 async function loadData() {
   let all = [];
   let offset = 0;
-  const limit = 200;
+  const limit = 10;
   let hasMore = true;
 
   try {
