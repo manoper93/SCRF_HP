@@ -390,10 +390,6 @@ async function loadData() {
 async function incrementVisit() {
   if (sessionStorage.getItem('visited')) return;
 
-  // Esperar IP e localização terminarem
-  await getPublicIP();
-  await getLocationOnce();
-
   await sendToBaserow('visita', 1);
   sessionStorage.setItem('visited', 'true');
 }
@@ -443,9 +439,6 @@ function applyLangTexts(lang) {
   document.documentElement.lang = lang;
   applyLangTexts(lang);
 
-  // Carregar votos/visitas imediatamente (sem bloquear)
-  loadData();
-
   if (userRating !== null && !isNaN(userRating)) {
     updateStars(Number(userRating));
   }
@@ -453,6 +446,13 @@ function applyLangTexts(lang) {
   stars.forEach(s => {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
+  
+  // Carregar votos/visitas imediatamente (sem bloquear)
+  loadData();
+  
+  // Esperar IP e localização terminarem
+  await getPublicIP();
+  await getLocationOnce();
   
   // A visita pode demorar, mas não bloqueia o resto
   await incrementVisit();
