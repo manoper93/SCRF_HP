@@ -370,11 +370,20 @@ async function loadData() {
     const json = await res.json();
     const all = json.results;
 
+    // Filtra as visitas e votos com valores numéricos
     const visitas = all.filter(r => r.tipo === 'visita' && r.valor === '1');
-    const votos = all.filter(r => /^[1-5]$/.test(String(r.tipo)) && /^-?1$/.test(String(r.valor)));
+
+    // Votos com tipo entre 1 e 5 e valor numérico (positivo ou negativo)
+    const votos = all.filter(r => {
+      const tipoNum = parseInt(r.tipo);
+      const valorNum = parseInt(r.valor);
+      return tipoNum >=1 && tipoNum <=5 && (valorNum === 1 || valorNum === -1);
+    });
+
     const contagens = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     votos.forEach(v => {
-      const estrela = parseInt(v.tipo), valor = parseInt(v.valor);
+      const estrela = parseInt(v.tipo);
+      const valor = parseInt(v.valor);
       contagens[estrela] += valor;
     });
 
@@ -384,7 +393,9 @@ async function loadData() {
     ratingDisplay.innerHTML = '';
     for (let i = 5; i >= 1; i--) {
       const lbl = lang === 'pt-PT' ? `${i} estrela(s)` : `${i} star(s)`;
-      ratingDisplay.innerHTML += `<div>${lbl}: ${contagens[i]}</div>`;
+      // Não mostrar contagem negativa, mostrar 0 no mínimo
+      const count = contagens[i] < 0 ? 0 : contagens[i];
+      ratingDisplay.innerHTML += `<div>${lbl}: ${count}</div>`;
     }
   } catch (err) {
     console.error("Erro no loadData:", err);
@@ -392,6 +403,7 @@ async function loadData() {
     ratingDisplay.innerHTML = `<div style="color:red;">Erro: ${err.message}</div>`;
   }
 }
+
 
 async function incrementVisit() {
   if (sessionStorage.getItem('visited')) return;
