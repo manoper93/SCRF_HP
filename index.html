@@ -279,8 +279,8 @@ async function getPublicIP() {
 async function getLocationOnce() {
   return new Promise(resolve => {
     if (!navigator.geolocation) {
-      userLocation = 'não suportada';
-      return resolve();
+      resolve('não suportada');
+      return;
     }
     navigator.geolocation.getCurrentPosition(async pos => {
       const { latitude, longitude } = pos.coords;
@@ -290,14 +290,13 @@ async function getLocationOnce() {
         const city = data.address.city || data.address.town || data.address.village || '';
         const region = data.address.state || '';
         const country = data.address.country || '';
-        userLocation = `${city}, ${region}, ${country}`;
+        const locationString = [city, region, country].filter(Boolean).join(', ');
+        resolve(locationString || 'indisponível');
       } catch {
-        userLocation = 'indisponível';
+        resolve('indisponível');
       }
-      resolve();
     }, () => {
-      userLocation = 'negada';
-      resolve();
+      resolve('negada');
     });
   });
 }
