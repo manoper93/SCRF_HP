@@ -158,7 +158,7 @@ async function loadData() {
       const valor = r.valor;
 
       if (typeof tipo === 'string' && typeof valor === 'string') {
-        if (tipo.toLowerCase() === 'visita' && valor.toUpperCase() === 'V') {
+        if (tipo.toLowerCase() === 'visita' && valor.toLowerCase() === 'v') {
           visitas++;
           continue;
         }
