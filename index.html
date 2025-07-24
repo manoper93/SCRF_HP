@@ -235,14 +235,13 @@
 <script>
 const API_URL = 'https://api.baserow.io/api/database/rows/table/587949/?user_field_names=true';
 const API_TOKEN = 'Token 4RapVT6Hv7ZFcwYzgAooJdmXS7ARo4XH';
+
 const USER_UUID = getOrCreateUUID();
 const stars = document.querySelectorAll('.star');
 const visitDisplay = document.getElementById('visit-count');
 const ratingDisplay = document.getElementById('rating-counts');
 const lang = localStorage.getItem('lang') || 'en';
-const userLocation = getLocationOnce();
-const userIP = getPublicIP();
-  
+
 const userDevice = /mobile/i.test(navigator.userAgent) ? 'Telemóvel' : 'Computador';
 const userOS = /Android/.test(navigator.userAgent) ? 'Android' :
                /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iOS' :
@@ -257,6 +256,7 @@ const userBrowser = /Edg\//.test(navigator.userAgent) ? "Edge" :
 
 let userRating = localStorage.getItem(`rating_${USER_UUID}`);
 
+// UUID generation / retrieval
 function getOrCreateUUID() {
   let uuid = localStorage.getItem('uuid');
   if (!uuid) {
@@ -266,6 +266,7 @@ function getOrCreateUUID() {
   return uuid;
 }
 
+// Async functions to get IP and location
 async function getPublicIP() {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
@@ -306,13 +307,14 @@ function formatDateLisbon() {
   return lisbon.split('.')[0]; // remove milissegundos
 }
 
-async function sendToBaserow(tipo, valor) {
+// Essa função envia os dados para a API, agora recebe IP e localização já resolvidos
+async function sendToBaserow(tipo, valor, ip, localizacao) {
   const data = {
     tipo, valor,
     uuid: USER_UUID,
-    ip: userIP,
+    ip,
     date: formatDateLisbon(),
-    localizacao: userLocation,
+    localizacao,
     dispositivo: userDevice,
     os: userOS,
     browser: userBrowser
@@ -346,8 +348,12 @@ async function sendVote(n) {
 
   ratingDisplay.innerHTML = `<div style="color:orange;">${lang === 'pt-PT' ? 'A atualizar…' : 'Updating…'}</div>`;
 
-  if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1);
-  await sendToBaserow(n, 1);
+  // Obter IP e localização atualizados antes de enviar
+  const ip = await getPublicIP();
+  const localizacao = await getLocationOnce();
+
+  if (stored && parseInt(stored) !== n) await sendToBaserow(stored, -1, ip, localizacao);
+  await sendToBaserow(n, 1, ip, localizacao);
 
   localStorage.setItem(key, n);
   userRating = n;
@@ -390,7 +396,11 @@ async function loadData() {
 async function incrementVisit() {
   if (sessionStorage.getItem('visited')) return;
 
-  await sendToBaserow('visita', 1);
+  // Obter IP e localização atualizados antes de enviar
+  const ip = await getPublicIP();
+  const localizacao = await getLocationOnce();
+
+  await sendToBaserow('visita', 1, ip, localizacao);
   sessionStorage.setItem('visited', 'true');
 }
 
@@ -434,7 +444,7 @@ function applyLangTexts(lang) {
   document.getElementById('schematic-btn').textContent = t.schematic;
   document.getElementById('gerber-btn').textContent = t.gerber;
 }
-  
+
 (async function init() {
   document.documentElement.lang = lang;
   applyLangTexts(lang);
@@ -447,13 +457,10 @@ function applyLangTexts(lang) {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
   
-  // Carregar votos/visitas imediatamente (sem bloquear)
   loadData();
   
-  // A visita pode demorar, mas não bloqueia o resto
   await incrementVisit();
 })();
-
 </script>
 
 <div class="github-footer">
