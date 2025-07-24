@@ -453,11 +453,7 @@ function applyLangTexts(lang) {
   stars.forEach(s => {
     s.addEventListener('click', () => sendVote(parseInt(s.dataset.value)));
   });
-
-  // Começar já IP e localização (mas não esperar)
-  getPublicIP();
-  getLocationOnce();
-
+  
   // A visita pode demorar, mas não bloqueia o resto
   await incrementVisit();
 })();
