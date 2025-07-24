@@ -270,9 +270,9 @@ async function getPublicIP() {
   try {
     const res = await fetch('https://api.ipify.org?format=json');
     const json = await res.json();
-    userIP = json.ip;
+    return json.ip;
   } catch {
-    userIP = 'unknown';
+    return 'unknown';
   }
 }
 
