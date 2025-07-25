@@ -129,7 +129,8 @@ h1, h2 {
 }
 
 /* Footer GitHub */
-..social-footer {
+/* Footer com GitHub + LinkedIn */
+.social-footer {
   position: fixed;
   bottom: 10px;
   left: 50%;
@@ -143,8 +144,10 @@ h1, h2 {
   cursor: pointer;
   user-select: none;
   display: flex;
+  align-items: center;
   gap: 20px;
 }
+
 .social-footer a {
   color: white;
   text-decoration: none;
@@ -152,8 +155,16 @@ h1, h2 {
   display: inline-flex;
   align-items: center;
 }
+
 .social-footer a:hover {
   text-decoration: underline;
+}
+
+.social-footer img {
+  height: 24px;
+  vertical-align: middle;
+  margin-right: 6px;
+  filter: brightness(0) invert(1); /* Faz ícones escuros ficarem brancos */
 }
 
 /* Responsividade */
