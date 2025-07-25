@@ -129,28 +129,30 @@ h1, h2 {
 }
 
 /* Footer GitHub */
-.github-footer {
+..social-footer {
   position: fixed;
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(0, 0, 0, 0.5);
-  padding: 6px 12px;
+  padding: 6px 16px;
   border-radius: 8px;
   font-size: 14px;
   color: white;
   z-index: 1200;
   cursor: pointer;
   user-select: none;
+  display: flex;
+  gap: 20px;
 }
-.github-footer a {
+.social-footer a {
   color: white;
   text-decoration: none;
   font-weight: bold;
   display: inline-flex;
   align-items: center;
 }
-.github-footer a:hover {
+.social-footer a:hover {
   text-decoration: underline;
 }
 
