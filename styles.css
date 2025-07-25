@@ -141,13 +141,10 @@ h1, h2 {
   font-size: 14px;
   color: white;
   z-index: 1200;
-  cursor: pointer;
-  user-select: none;
   display: flex;
-  align-items: center;
   gap: 20px;
+  align-items: center;
 }
-
 .social-footer a {
   color: white;
   text-decoration: none;
@@ -155,17 +152,10 @@ h1, h2 {
   display: inline-flex;
   align-items: center;
 }
-
 .social-footer a:hover {
   text-decoration: underline;
 }
 
-.social-footer img {
-  height: 24px;
-  vertical-align: middle;
-  margin-right: 6px;
-  filter: brightness(0) invert(1); /* Faz ícones escuros ficarem brancos */
-}
 
 /* Responsividade */
 @media (max-width: 600px) {
