@@ -136,14 +136,15 @@ h1, h2 {
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(0, 0, 0, 0.5);
-  padding: 6px 16px;
-  border-radius: 8px;
+  padding: 8px 20px;
+  border-radius: 10px;
   font-size: 14px;
   color: white;
   z-index: 1200;
   display: flex;
-  gap: 20px;
+  gap: 24px;
   align-items: center;
+  backdrop-filter: blur(3px); /* opcional: mais moderno */
 }
 .social-footer a {
   color: white;
@@ -155,7 +156,6 @@ h1, h2 {
 .social-footer a:hover {
   text-decoration: underline;
 }
-
 
 /* Responsividade */
 @media (max-width: 600px) {
